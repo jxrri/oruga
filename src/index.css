@@ -1,0 +1,165 @@
+@import 'tailwindcss';
+
+/*
+ * Tokens de Oruga (docs/DISENO.md). Un solo acento: amarillo señalización.
+ * Los colores semánticos (ok, warn, danger, info) solo comunican estado, nunca decoran.
+ */
+@custom-variant dark (&:where([data-tema='oscuro'], [data-tema='oscuro'] *));
+
+@theme inline {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+
+  --color-canvas: var(--canvas);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-mnt: var(--mnt);
+
+  /* Estados de reserva (barras del timeline, badges) */
+  --color-res-borrador: var(--res-borrador);
+  --color-res-confirmada: var(--res-confirmada);
+  --color-res-en-curso: var(--res-en-curso);
+  --color-res-finalizada: var(--res-finalizada);
+  --color-res-cancelada: var(--res-cancelada);
+
+  --shadow-panel: 0 1px 0 0 var(--sombra-borde), 0 8px 24px -12px var(--sombra);
+  --shadow-flotante: 0 1px 0 0 var(--sombra-borde), 0 18px 48px -16px var(--sombra);
+
+  --ease-salida: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  color-scheme: light;
+  --canvas: #f3f4f6;
+  --panel: #ffffff;
+  --panel-2: #f8f9fa;
+  --raised: #ffffff;
+  --line: #e2e5e9;
+  --line-strong: #cdd2d8;
+  --ink: #111317;
+  --ink-2: #4a525c;
+  --ink-3: #69717b;
+  --accent: #ffc21a;
+  --accent-ink: #191300;
+  --accent-fg: #8a6200;
+  --accent-soft: rgb(255 194 26 / 0.18);
+  --ok: #0b8a4c;
+  --ok-soft: rgb(11 138 76 / 0.1);
+  --warn: #c2570c;
+  --warn-soft: rgb(194 87 12 / 0.1);
+  --danger: #d12f2f;
+  --danger-soft: rgb(209 47 47 / 0.09);
+  --info: #2563d9;
+  --info-soft: rgb(37 99 217 / 0.09);
+  --mnt: #6b7380;
+  --res-borrador: #8a929c;
+  --res-confirmada: #2563d9;
+  --res-en-curso: #e0a400;
+  --res-finalizada: #5f8f76;
+  --res-cancelada: #a3a9b1;
+  --sombra: rgb(17 19 23 / 0.16);
+  --sombra-borde: rgb(17 19 23 / 0.04);
+}
+
+[data-tema='oscuro'] {
+  color-scheme: dark;
+  --canvas: #0c0d0f;
+  --panel: #121418;
+  --panel-2: #171a1f;
+  --raised: #1d2127;
+  --line: #252a31;
+  --line-strong: #343a43;
+  --ink: #edeef0;
+  --ink-2: #a6adb6;
+  --ink-3: #7c848e;
+  --accent: #ffc21a;
+  --accent-ink: #191300;
+  --accent-fg: #ffc21a;
+  --accent-soft: rgb(255 194 26 / 0.12);
+  --ok: #3dd68c;
+  --ok-soft: rgb(61 214 140 / 0.13);
+  --warn: #ff9442;
+  --warn-soft: rgb(255 148 66 / 0.13);
+  --danger: #ff5c5c;
+  --danger-soft: rgb(255 92 92 / 0.13);
+  --info: #6ea8ff;
+  --info-soft: rgb(110 168 255 / 0.13);
+  --mnt: #9aa3b2;
+  --res-borrador: #6b737d;
+  --res-confirmada: #4f8ff7;
+  --res-en-curso: #ffc21a;
+  --res-finalizada: #4f7a64;
+  --res-cancelada: #4a5059;
+  --sombra: rgb(0 0 0 / 0.55);
+  --sombra-borde: rgb(255 255 255 / 0.03);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-canvas font-sans text-[14px] leading-normal text-ink;
+    font-feature-settings: 'ss01', 'cv11';
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Bloques de mantenimiento: rayado diagonal (el color nunca va solo, SPEC §12.1) */
+  .rayado-mnt {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklab, var(--mnt) 34%, transparent) 0 6px,
+      color-mix(in oklab, var(--mnt) 12%, transparent) 6px 12px
+    );
+  }
+  /* Fuera de servicio: trama cruzada sobre gris */
+  .trama-fds {
+    background-color: color-mix(in oklab, var(--ink-3) 18%, transparent);
+    background-image:
+      repeating-linear-gradient(45deg, color-mix(in oklab, var(--ink-3) 30%, transparent) 0 1px, transparent 1px 8px),
+      repeating-linear-gradient(-45deg, color-mix(in oklab, var(--ink-3) 30%, transparent) 0 1px, transparent 1px 8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

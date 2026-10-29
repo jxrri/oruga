@@ -1,0 +1,4 @@
+// Marcador temporal: lo reemplaza la tarea T8.
+export default function ComparacionPage() {
+  return <h1 className="text-2xl font-semibold">Salida contra devolución</h1>;
+}

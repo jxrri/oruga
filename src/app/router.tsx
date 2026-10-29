@@ -1,0 +1,59 @@
+import { createBrowserRouter, Navigate } from 'react-router';
+import type { Recurso } from './permisos';
+import AppLayout from './AppLayout';
+import ErrorDeModulo from './ErrorDeModulo';
+import RutaProtegida from './RutaProtegida';
+
+type Modulo = { default: React.ComponentType };
+
+/** Ruta perezosa con su propio Error Boundary (SPEC §12.2) y control de permiso por recurso. */
+const ruta = (path: string, cargar: () => Promise<Modulo>, recurso: Recurso) => ({
+  path,
+  ErrorBoundary: ErrorDeModulo,
+  lazy: async () => {
+    const { default: Pagina } = await cargar();
+    return {
+      Component: () => (
+        <RutaProtegida recurso={recurso}>
+          <Pagina />
+        </RutaProtegida>
+      ),
+    };
+  },
+});
+
+export const router = createBrowserRouter(
+  [
+    {
+      path: '/login',
+      lazy: async () => ({ Component: (await import('@/features/auth/pages/LoginPage')).default }),
+    },
+    {
+      path: '/',
+      Component: AppLayout,
+      ErrorBoundary: ErrorDeModulo,
+      children: [
+        { index: true, element: <Navigate to="/tablero" replace /> },
+        ruta('tablero', () => import('@/features/tablero/pages/TableroPage'), 'tablero'),
+        ruta('planificador', () => import('@/features/planificador/pages/PlanificadorPage'), 'reserva'),
+        ruta('inventario', () => import('@/features/inventario/pages/InventarioPage'), 'activo'),
+        ruta('inventario/:id', () => import('@/features/inventario/pages/ActivoPage'), 'activo'),
+        ruta('reservas', () => import('@/features/reservas/pages/ReservasPage'), 'reserva'),
+        ruta('reservas/nueva', () => import('@/features/reservas/pages/ReservaNuevaPage'), 'reserva'),
+        ruta('reservas/:id', () => import('@/features/reservas/pages/ReservaPage'), 'reserva'),
+        ruta('inspecciones', () => import('@/features/inspecciones/pages/InspeccionesPage'), 'inspeccion'),
+        ruta('inspecciones/nueva', () => import('@/features/inspecciones/pages/InspeccionNuevaPage'), 'inspeccion'),
+        ruta('inspecciones/comparar/:reservaId', () => import('@/features/inspecciones/pages/ComparacionPage'), 'inspeccion'),
+        ruta('inspecciones/:id', () => import('@/features/inspecciones/pages/InspeccionPage'), 'inspeccion'),
+        ruta('mantenimiento', () => import('@/features/mantenimiento/pages/MantenimientoPage'), 'orden'),
+        ruta('clientes', () => import('@/features/clientes/pages/ClientesPage'), 'cliente'),
+        ruta('clientes/:id', () => import('@/features/clientes/pages/ClientePage'), 'cliente'),
+        ruta('ubicacion', () => import('@/features/ubicacion/pages/UbicacionPage'), 'ubicacion'),
+        ruta('admin/plantillas', () => import('@/features/inspecciones/pages/PlantillasPage'), 'plantilla'),
+        ruta('creditos', () => import('@/features/creditos/CreditosPage'), 'sede'),
+        { path: '*', lazy: async () => ({ Component: (await import('./pages/NoEncontradoPage')).default }) },
+      ],
+    },
+  ],
+  { basename: import.meta.env.BASE_URL.replace(/\/$/, '') || '/' },
+);
