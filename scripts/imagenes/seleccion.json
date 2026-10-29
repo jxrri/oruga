@@ -1,0 +1,169 @@
+{
+  "categorias": {
+    "excavadora": [
+      {
+        "archivo": "File:Wagga Wagga Base Hospital carpark construction (4).jpg",
+        "licencia": "CC BY-SA 3.0 AU",
+        "alt": "Excavadora de orugas amarilla removiendo tierra en una obra junto a un edificio de ladrillo"
+      },
+      {
+        "archivo": "File:Excavator 0027.jpg",
+        "alt": "Excavadora de ruedas roja abriendo una zanja en una calle adoquinada"
+      }
+    ],
+    "retroexcavadora": [
+      {
+        "archivo": "File:Backhoe loader Cat420E left.jpg",
+        "alt": "Retroexcavadora Caterpillar 420E amarilla sobre terreno de tierra compactada"
+      },
+      {
+        "archivo": "File:Caterpillar backhoe loader at construction site in Sunnyvale, back view.jpg",
+        "alt": "Retroexcavadora Caterpillar vista desde atrás con el brazo excavador en una obra urbana"
+      }
+    ],
+    "cargador-frontal": [
+      {
+        "archivo": "File:Komatsu WA380-20210601-RM-160906.jpg",
+        "alt": "Cargador frontal con el cucharón en alto descargando grava sobre una pila"
+      },
+      {
+        "archivo": "File:Kramer-Wheel Loader (Front loader)-Model 345-88kW-01ASD.jpg",
+        "alt": "Cargador frontal compacto amarillo y gris con el cucharón apoyado frente a una nave industrial"
+      }
+    ],
+    "grua-movil": [
+      {
+        "archivo": "File:A Liebherr LTM 1500-8.1 crane truck in Taiwan.jpg",
+        "alt": "Grúa móvil amarilla de varios ejes con la pluma extendida en una obra en construcción"
+      },
+      {
+        "archivo": "File:Балхаш, МАЗ-кран на Жезказганской.jpg",
+        "alt": "Grúa móvil sobre camión con la pluma alzada en un terreno de tierra al atardecer"
+      }
+    ],
+    "montacargas": [
+      {
+        "archivo": "File:Yale forklift Our Community Place Harrisonburg VA May 2008.jpg",
+        "alt": "Montacargas amarillo con una carga sobre paleta en un estacionamiento"
+      },
+      {
+        "archivo": "File:Clark forklift Keran Hallit.jpg",
+        "alt": "Montacargas amarillo con paletas de madera sobre las horquillas junto a un depósito"
+      }
+    ],
+    "minicargador": [
+      {
+        "archivo": "File:Bobcat T650 compact track loader (side view).jpg",
+        "autor": "Dmitry Ivanov",
+        "alt": "Minicargador de orugas blanco con cucharón trabajando sobre tierra removida"
+      },
+      {
+        "archivo": "File:Case skid-steer loader - Arlington, MA.jpg",
+        "alt": "Minicargador de ruedas Case amarillo con el cucharón bajo sobre pavimento"
+      }
+    ],
+    "motoniveladora": [
+      {
+        "archivo": "File:Grader 2.jpg",
+        "alt": "Motoniveladora Caterpillar amarilla con la cuchilla central sobre césped"
+      },
+      {
+        "archivo": "File:Budowa Velostrady nr 6 - odcinek Katowice Brynów - Katowice Brynów, wyrównywarka oraz walec podczas pracy.jpg",
+        "alt": "Motoniveladora nivelando una base de tierra junto a una vía férrea, con un compactador detrás"
+      }
+    ],
+    "compactador": [
+      {
+        "archivo": "File:Caterpillar CB54B roller on dirt lot in Campbell.jpg",
+        "alt": "Compactador de doble rodillo Caterpillar sobre un terreno de tierra nivelado"
+      },
+      {
+        "archivo": "File:Road roller in Iraq.JPG",
+        "alt": "Compactador de rodillo pata de cabra trabajando sobre tierra suelta, con palmeras al fondo"
+      }
+    ],
+    "camion-volteo": [
+      {
+        "archivo": "File:Mercedes-Benz Actros 4148 dump truck near Neptunbrunnen in Berlin. Spielvogel 2013 1.jpg",
+        "autor": "Spielvogel",
+        "alt": "Camión de volteo amarillo con tolva trasera en una obra de tierra"
+      },
+      {
+        "archivo": "File:MAN dump truck - Kubota U48-4.jpg",
+        "alt": "Camión de volteo azul cargado de tierra junto a una miniexcavadora naranja en una obra"
+      }
+    ],
+    "camioneta-pickup": [
+      {
+        "archivo": "File:Toyota Hilux 2.4J 4x2 20221019.jpg",
+        "alt": "Camioneta pickup Toyota Hilux blanca de cabina doble vista de frente"
+      },
+      {
+        "archivo": "File:2020 Toyota Hilux E (front left side view).jpg",
+        "alt": "Camioneta pickup Toyota Hilux plateada estacionada frente a una vivienda"
+      }
+    ],
+    "furgon-carga": [
+      {
+        "archivo": "File:2016 Hino 338 Box Truck in White, Front Left, 01-21-2023.jpg",
+        "alt": "Camión furgón blanco sin rotular con caja de carga cerrada"
+      },
+      {
+        "archivo": "File:2021 Mazda Scrum KC refrigerator truck.jpg",
+        "alt": "Camión furgón pequeño blanco con caja refrigerada cerrada"
+      }
+    ],
+    "minibus": [
+      {
+        "archivo": "File:2001-2007 Toyota Coaster bus 01.jpg",
+        "alt": "Minibús Toyota Coaster blanco estacionado junto a la acera"
+      },
+      {
+        "archivo": "File:Toyota Coaster in Bangkok (19).jpg",
+        "alt": "Minibús Toyota Coaster blanco con franjas de color en una terminal techada"
+      }
+    ]
+  },
+  "escenas": {
+    "hero": [
+      {
+        "archivo": "File:Done for this day (5924826270).jpg",
+        "alt": "Silueta de un tractor de orugas sobre un montículo de tierra bajo un cielo de atardecer rosado y naranja"
+      },
+      {
+        "archivo": "File:Åkerman EC300 Garpenberg 01.jpg",
+        "alt": "Excavadora de orugas naranja con el brazo extendido sobre un terreno removido al caer la tarde"
+      },
+      {
+        "archivo": "File:P&H 4100XPB shovel.jpg",
+        "alt": "Pala minera de gran tamaño con sus luces encendidas en una ladera al anochecer"
+      }
+    ],
+    "patio": [
+      {
+        "archivo": "File:Northern California Wildfire Recovery (25991475567).jpg",
+        "alt": "Fila de excavadoras y cargadores estacionados a un costado de una avenida"
+      }
+    ],
+    "inspeccion": [
+      {
+        "archivo": "File:Don't Tread On Me. (148411352).jpg",
+        "alt": "Primer plano de la banda de rodamiento de un neumático"
+      },
+      {
+        "archivo": "File:Toyota 2RZ-FE engine 1998 Hilux.jpg",
+        "alt": "Compartimiento del motor de una camioneta Toyota Hilux con mangueras y conexiones a la vista"
+      },
+      {
+        "archivo": "File:Mechanics on the Move; MCED-Palau 23 2 fixes HYEX (8053728).jpg",
+        "alt": "Dos mecánicos con casco de pie sobre el brazo hidráulico de una excavadora durante una revisión"
+      }
+    ],
+    "mantenimiento": [
+      {
+        "archivo": "File:Au Morandarte Flickr \"The Tempo adopting its usual position\" (10640656453).jpg",
+        "alt": "Autobús elevado sobre gatos dentro de un taller techado, junto a otros autobuses en revisión"
+      }
+    ]
+  }
+}

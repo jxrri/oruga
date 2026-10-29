@@ -1,0 +1,85 @@
+{
+  "categorias": {
+    "excavadora": [
+      "hydraulic excavator construction site",
+      "crawler excavator digging"
+    ],
+    "retroexcavadora": [
+      "backhoe loader",
+      "backhoe loader construction"
+    ],
+    "cargador-frontal": [
+      "wheel loader",
+      "front end loader gravel"
+    ],
+    "grua-movil": [
+      "mobile crane",
+      "truck crane lifting"
+    ],
+    "montacargas": [
+      "forklift truck",
+      "forklift warehouse"
+    ],
+    "minicargador": [
+      "skid steer loader",
+      "skid-steer loader bobcat"
+    ],
+    "motoniveladora": [
+      "motor grader",
+      "road grader construction"
+    ],
+    "compactador": [
+      "road roller compactor",
+      "vibratory roller soil"
+    ],
+    "camion-volteo": [
+      "dump truck construction",
+      "tipper truck"
+    ],
+    "camioneta-pickup": [
+      "Toyota Hilux pickup",
+      "pickup truck"
+    ],
+    "furgon-carga": [
+      "box truck",
+      "cargo van"
+    ],
+    "minibus": [
+      "Encava minibus",
+      "Toyota Coaster minibus",
+      "minibus"
+    ]
+  },
+  "escenas": {
+    "hero": [
+      "excavator sunset",
+      "wheel loader sunset",
+      "dump truck dusk construction",
+      "excavator silhouette",
+      "bulldozer sunset",
+      "mining excavator overcast"
+    ],
+    "patio": [
+      "heavy equipment yard",
+      "parked excavators row",
+      "construction machinery depot",
+      "equipment rental yard",
+      "construction equipment parked"
+    ],
+    "inspeccion": [
+      "excavator hydraulic hoses close-up",
+      "hydraulic cylinder excavator",
+      "tractor tire tread",
+      "truck tire tread",
+      "diesel engine bay truck",
+      "oil leak engine"
+    ],
+    "mantenimiento": [
+      "excavator repair workshop",
+      "truck workshop garage",
+      "heavy equipment maintenance",
+      "truck repair garage",
+      "bus workshop maintenance"
+    ]
+  }
+}

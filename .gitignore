@@ -10,3 +10,4 @@ test-results
 .codegraph
 .DS_Store
 *.tsbuildinfo
+.atl

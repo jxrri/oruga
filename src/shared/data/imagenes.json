@@ -1,1 +1,386 @@
-{ "categorias": {}, "escenas": {} }
+{
+  "categorias": {
+    "excavadora": [
+      {
+        "archivo": "excavadora-1",
+        "ancho": 1600,
+        "alto": 1200,
+        "titulo": "Wagga Wagga Base Hospital carpark construction (4)",
+        "autor": "Bidgee",
+        "licencia": "CC BY-SA 3.0 AU",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/3.0/au/deed.en",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Wagga_Wagga_Base_Hospital_carpark_construction_(4).jpg",
+        "alt": "Excavadora de orugas amarilla removiendo tierra en una obra junto a un edificio de ladrillo"
+      },
+      {
+        "archivo": "excavadora-2",
+        "ancho": 1600,
+        "alto": 1200,
+        "titulo": "Excavator 0027",
+        "autor": "Rami Tarawneh",
+        "licencia": "CC BY 2.5",
+        "urlLicencia": "https://creativecommons.org/licenses/by/2.5",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Excavator_0027.jpg",
+        "alt": "Excavadora de ruedas roja abriendo una zanja en una calle adoquinada"
+      }
+    ],
+    "retroexcavadora": [
+      {
+        "archivo": "retroexcavadora-1",
+        "ancho": 1600,
+        "alto": 1064,
+        "titulo": "Backhoe loader Cat420E left",
+        "autor": "Shaun Greiner from Creve Coeur, United States of America",
+        "licencia": "CC BY-SA 2.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/2.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Backhoe_loader_Cat420E_left.jpg",
+        "alt": "Retroexcavadora Caterpillar 420E amarilla sobre terreno de tierra compactada"
+      },
+      {
+        "archivo": "retroexcavadora-2",
+        "ancho": 1600,
+        "alto": 1200,
+        "titulo": "Caterpillar backhoe loader at construction site in Sunnyvale, back view",
+        "autor": "Grendelkhan",
+        "licencia": "CC BY-SA 3.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/3.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Caterpillar_backhoe_loader_at_construction_site_in_Sunnyvale,_back_view.jpg",
+        "alt": "Retroexcavadora Caterpillar vista desde atrás con el brazo excavador en una obra urbana"
+      }
+    ],
+    "cargador-frontal": [
+      {
+        "archivo": "cargador-frontal-1",
+        "ancho": 1600,
+        "alto": 1200,
+        "titulo": "Komatsu WA380-20210601-RM-160906",
+        "autor": "Ermell",
+        "licencia": "CC BY-SA 4.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/4.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Komatsu_WA380-20210601-RM-160906.jpg",
+        "alt": "Cargador frontal con el cucharón en alto descargando grava sobre una pila"
+      },
+      {
+        "archivo": "cargador-frontal-2",
+        "ancho": 1600,
+        "alto": 1200,
+        "titulo": "Kramer-Wheel Loader (Front loader)-Model 345-88kW-01ASD",
+        "autor": "Asurnipal",
+        "licencia": "CC BY-SA 4.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/4.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Kramer-Wheel_Loader_(Front_loader)-Model_345-88kW-01ASD.jpg",
+        "alt": "Cargador frontal compacto amarillo y gris con el cucharón apoyado frente a una nave industrial"
+      }
+    ],
+    "grua-movil": [
+      {
+        "archivo": "grua-movil-1",
+        "ancho": 1600,
+        "alto": 1200,
+        "titulo": "A Liebherr LTM 1500-8.1 crane truck in Taiwan",
+        "autor": "Tbatb",
+        "licencia": "CC BY-SA 4.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/4.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:A_Liebherr_LTM_1500-8.1_crane_truck_in_Taiwan.jpg",
+        "alt": "Grúa móvil amarilla de varios ejes con la pluma extendida en una obra en construcción"
+      },
+      {
+        "archivo": "grua-movil-2",
+        "ancho": 1600,
+        "alto": 1067,
+        "titulo": "Балхаш, МАЗ-кран на Жезказганской",
+        "autor": "Nikolai Bulykin",
+        "licencia": "CC BY-SA 4.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/4.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:%D0%91%D0%B0%D0%BB%D1%85%D0%B0%D1%88,_%D0%9C%D0%90%D0%97-%D0%BA%D1%80%D0%B0%D0%BD_%D0%BD%D0%B0_%D0%96%D0%B5%D0%B7%D0%BA%D0%B0%D0%B7%D0%B3%D0%B0%D0%BD%D1%81%D0%BA%D0%BE%D0%B9.jpg",
+        "alt": "Grúa móvil sobre camión con la pluma alzada en un terreno de tierra al atardecer"
+      }
+    ],
+    "montacargas": [
+      {
+        "archivo": "montacargas-1",
+        "ancho": 1600,
+        "alto": 1196,
+        "titulo": "Yale forklift Our Community Place Harrisonburg VA May 2008",
+        "autor": "Artaxerxes",
+        "licencia": "CC BY-SA 3.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/3.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Yale_forklift_Our_Community_Place_Harrisonburg_VA_May_2008.jpg",
+        "alt": "Montacargas amarillo con una carga sobre paleta en un estacionamiento"
+      },
+      {
+        "archivo": "montacargas-2",
+        "ancho": 1600,
+        "alto": 1067,
+        "titulo": "Clark forklift Keran Hallit",
+        "autor": "Antti Leppänen",
+        "licencia": "CC BY 4.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by/4.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Clark_forklift_Keran_Hallit.jpg",
+        "alt": "Montacargas amarillo con paletas de madera sobre las horquillas junto a un depósito"
+      }
+    ],
+    "minicargador": [
+      {
+        "archivo": "minicargador-1",
+        "ancho": 1600,
+        "alto": 1155,
+        "titulo": "Bobcat T650 compact track loader (side view)",
+        "autor": "Dmitry Ivanov",
+        "licencia": "CC BY-SA 4.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/4.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Bobcat_T650_compact_track_loader_(side_view).jpg",
+        "alt": "Minicargador de orugas blanco con cucharón trabajando sobre tierra removida"
+      },
+      {
+        "archivo": "minicargador-2",
+        "ancho": 1600,
+        "alto": 1200,
+        "titulo": "Case skid-steer loader - Arlington, MA",
+        "autor": "Daderot",
+        "licencia": "CC0 1.0",
+        "urlLicencia": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Case_skid-steer_loader_-_Arlington,_MA.jpg",
+        "alt": "Minicargador de ruedas Case amarillo con el cucharón bajo sobre pavimento"
+      }
+    ],
+    "motoniveladora": [
+      {
+        "archivo": "motoniveladora-1",
+        "ancho": 1600,
+        "alto": 977,
+        "titulo": "Grader 2",
+        "autor": "Wikideas1",
+        "licencia": "CC0 1.0",
+        "urlLicencia": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Grader_2.jpg",
+        "alt": "Motoniveladora Caterpillar amarilla con la cuchilla central sobre césped"
+      },
+      {
+        "archivo": "motoniveladora-2",
+        "ancho": 1600,
+        "alto": 1067,
+        "titulo": "Budowa Velostrady nr 6 - odcinek Katowice Brynów - Katowice Brynów, wyrównywarka oraz walec podczas pracy",
+        "autor": "Krzysztof Popławski",
+        "licencia": "CC BY 4.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by/4.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Budowa_Velostrady_nr_6_-_odcinek_Katowice_Bryn%C3%B3w_-_Katowice_Bryn%C3%B3w,_wyr%C3%B3wnywarka_oraz_walec_podczas_pracy.jpg",
+        "alt": "Motoniveladora nivelando una base de tierra junto a una vía férrea, con un compactador detrás"
+      }
+    ],
+    "compactador": [
+      {
+        "archivo": "compactador-1",
+        "ancho": 1600,
+        "alto": 1205,
+        "titulo": "Caterpillar CB54B roller on dirt lot in Campbell",
+        "autor": "Grendelkhan",
+        "licencia": "CC BY-SA 4.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/4.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Caterpillar_CB54B_roller_on_dirt_lot_in_Campbell.jpg",
+        "alt": "Compactador de doble rodillo Caterpillar sobre un terreno de tierra nivelado"
+      },
+      {
+        "archivo": "compactador-2",
+        "ancho": 1600,
+        "alto": 1071,
+        "titulo": "Road roller in Iraq",
+        "autor": "James Wagner, U.S. Navy",
+        "licencia": "Dominio público",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Road_roller_in_Iraq.JPG",
+        "alt": "Compactador de rodillo pata de cabra trabajando sobre tierra suelta, con palmeras al fondo"
+      }
+    ],
+    "camion-volteo": [
+      {
+        "archivo": "camion-volteo-1",
+        "ancho": 1600,
+        "alto": 1108,
+        "titulo": "Mercedes-Benz Actros 4148 dump truck near Neptunbrunnen in Berlin. Spielvogel 2013 1",
+        "autor": "Spielvogel",
+        "licencia": "CC0 1.0",
+        "urlLicencia": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Mercedes-Benz_Actros_4148_dump_truck_near_Neptunbrunnen_in_Berlin._Spielvogel_2013_1.jpg",
+        "alt": "Camión de volteo amarillo con tolva trasera en una obra de tierra"
+      },
+      {
+        "archivo": "camion-volteo-2",
+        "ancho": 1600,
+        "alto": 1178,
+        "titulo": "MAN dump truck - Kubota U48-4",
+        "autor": "Cjp24",
+        "licencia": "CC BY-SA 4.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/4.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:MAN_dump_truck_-_Kubota_U48-4.jpg",
+        "alt": "Camión de volteo azul cargado de tierra junto a una miniexcavadora naranja en una obra"
+      }
+    ],
+    "camioneta-pickup": [
+      {
+        "archivo": "camioneta-pickup-1",
+        "ancho": 1600,
+        "alto": 935,
+        "titulo": "Toyota Hilux 2.4J 4x2 20221019",
+        "autor": "Ethan Llamas",
+        "licencia": "CC BY-SA 4.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/4.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Toyota_Hilux_2.4J_4x2_20221019.jpg",
+        "alt": "Camioneta pickup Toyota Hilux blanca de cabina doble vista de frente"
+      },
+      {
+        "archivo": "camioneta-pickup-2",
+        "ancho": 1600,
+        "alto": 900,
+        "titulo": "2020 Toyota Hilux E (front left side view)",
+        "autor": "Ethan Llamas",
+        "licencia": "CC BY-SA 4.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/4.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:2020_Toyota_Hilux_E_(front_left_side_view).jpg",
+        "alt": "Camioneta pickup Toyota Hilux plateada estacionada frente a una vivienda"
+      }
+    ],
+    "furgon-carga": [
+      {
+        "archivo": "furgon-carga-1",
+        "ancho": 1600,
+        "alto": 857,
+        "titulo": "2016 Hino 338 Box Truck in White, Front Left, 01-21-2023",
+        "autor": "Elise240SX",
+        "licencia": "CC BY-SA 4.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/4.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:2016_Hino_338_Box_Truck_in_White,_Front_Left,_01-21-2023.jpg",
+        "alt": "Camión furgón blanco sin rotular con caja de carga cerrada"
+      },
+      {
+        "archivo": "furgon-carga-2",
+        "ancho": 1600,
+        "alto": 1013,
+        "titulo": "2021 Mazda Scrum KC refrigerator truck",
+        "autor": "TTTNIS",
+        "licencia": "CC0 1.0",
+        "urlLicencia": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "fuente": "https://commons.wikimedia.org/wiki/File:2021_Mazda_Scrum_KC_refrigerator_truck.jpg",
+        "alt": "Camión furgón pequeño blanco con caja refrigerada cerrada"
+      }
+    ],
+    "minibus": [
+      {
+        "archivo": "minibus-1",
+        "ancho": 1600,
+        "alto": 873,
+        "titulo": "2001-2007 Toyota Coaster bus 01",
+        "autor": "OSX",
+        "licencia": "Dominio público",
+        "fuente": "https://commons.wikimedia.org/wiki/File:2001-2007_Toyota_Coaster_bus_01.jpg",
+        "alt": "Minibús Toyota Coaster blanco estacionado junto a la acera"
+      },
+      {
+        "archivo": "minibus-2",
+        "ancho": 1600,
+        "alto": 1199,
+        "titulo": "Toyota Coaster in Bangkok (19)",
+        "autor": "Patiparn.Nice2002bkk",
+        "licencia": "CC0 1.0",
+        "urlLicencia": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Toyota_Coaster_in_Bangkok_(19).jpg",
+        "alt": "Minibús Toyota Coaster blanco con franjas de color en una terminal techada"
+      }
+    ]
+  },
+  "escenas": {
+    "hero": [
+      {
+        "archivo": "hero-1",
+        "ancho": 1600,
+        "alto": 937,
+        "titulo": "Done for this day (5924826270)",
+        "autor": "~Stingrays~",
+        "licencia": "CC BY 2.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by/2.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Done_for_this_day_(5924826270).jpg",
+        "alt": "Silueta de un tractor de orugas sobre un montículo de tierra bajo un cielo de atardecer rosado y naranja"
+      },
+      {
+        "archivo": "hero-2",
+        "ancho": 1600,
+        "alto": 1067,
+        "titulo": "Åkerman EC300 Garpenberg 01",
+        "autor": "Calle Eklund/ V-wolf",
+        "licencia": "CC BY 3.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by/3.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:%C3%85kerman_EC300_Garpenberg_01.jpg",
+        "alt": "Excavadora de orugas naranja con el brazo extendido sobre un terreno removido al caer la tarde"
+      },
+      {
+        "archivo": "hero-3",
+        "ancho": 1600,
+        "alto": 1200,
+        "titulo": "P&H 4100XPB shovel",
+        "autor": "Sansumaria",
+        "licencia": "CC BY-SA 3.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/3.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:P%26H_4100XPB_shovel.jpg",
+        "alt": "Pala minera de gran tamaño con sus luces encendidas en una ladera al anochecer"
+      }
+    ],
+    "patio": [
+      {
+        "archivo": "patio-1",
+        "ancho": 1600,
+        "alto": 1060,
+        "titulo": "Northern California Wildfire Recovery (25991475567)",
+        "autor": "U.S. Army Corps of Engineers Sacramento District",
+        "licencia": "Dominio público",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Northern_California_Wildfire_Recovery_(25991475567).jpg",
+        "alt": "Fila de excavadoras y cargadores estacionados a un costado de una avenida"
+      }
+    ],
+    "inspeccion": [
+      {
+        "archivo": "inspeccion-1",
+        "ancho": 1600,
+        "alto": 1067,
+        "titulo": "Don't Tread On Me. (148411352)",
+        "autor": "Scott Robinson from Rockville, MD, USA",
+        "licencia": "CC BY 2.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by/2.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Don%27t_Tread_On_Me._(148411352).jpg",
+        "alt": "Primer plano de la banda de rodamiento de un neumático"
+      },
+      {
+        "archivo": "inspeccion-2",
+        "ancho": 1600,
+        "alto": 1200,
+        "titulo": "Toyota 2RZ-FE engine 1998 Hilux",
+        "autor": "Killua.V8",
+        "licencia": "CC BY-SA 3.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/3.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Toyota_2RZ-FE_engine_1998_Hilux.jpg",
+        "alt": "Compartimiento del motor de una camioneta Toyota Hilux con mangueras y conexiones a la vista"
+      },
+      {
+        "archivo": "inspeccion-3",
+        "ancho": 1600,
+        "alto": 1068,
+        "titulo": "Mechanics on the Move; MCED-Palau 23 2 fixes HYEX (8053728)",
+        "autor": "U.S. Marine Corps photo by Staff Sgt. David Bickel",
+        "licencia": "Dominio público",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Mechanics_on_the_Move;_MCED-Palau_23_2_fixes_HYEX_(8053728).jpg",
+        "alt": "Dos mecánicos con casco de pie sobre el brazo hidráulico de una excavadora durante una revisión"
+      }
+    ],
+    "mantenimiento": [
+      {
+        "archivo": "mantenimiento-1",
+        "ancho": 1600,
+        "alto": 1200,
+        "titulo": "Au Morandarte Flickr \"The Tempo adopting its usual position\" (10640656453)",
+        "autor": "Au Morandarte from Chiswick/Romford, London, England",
+        "licencia": "CC BY-SA 2.0",
+        "urlLicencia": "https://creativecommons.org/licenses/by-sa/2.0",
+        "fuente": "https://commons.wikimedia.org/wiki/File:Au_Morandarte_Flickr_%22The_Tempo_adopting_its_usual_position%22_(10640656453).jpg",
+        "alt": "Autobús elevado sobre gatos dentro de un taller techado, junto a otros autobuses en revisión"
+      }
+    ]
+  }
+}
