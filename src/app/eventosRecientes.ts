@@ -1,4 +1,4 @@
-// Marcador temporal (tarea T3): registro de eventos en tiempo real para el indicador de la cabecera.
+// Registro de eventos en tiempo real para el indicador de la cabecera (lo alimenta app/tiempoReal.ts).
 import { useSyncExternalStore } from 'react';
 import type { EventoTiempoReal } from '@/api/contrato';
 

@@ -1,0 +1,27 @@
+[
+  {
+    "id": "plt-maquinaria",
+    "nombre": "Inspección de maquinaria pesada",
+    "version": 1,
+    "categoriaIds": ["cat-excavadora", "cat-cargador-frontal", "cat-grua-movil", "cat-montacargas", "cat-minicargador", "cat-motoniveladora", "cat-compactador"],
+    "secciones": [
+      { "id": "motor", "titulo": "Motor y fluidos", "campos": [
+        { "id": "nivel_aceite_motor", "tipo": "nivel", "etiqueta": "Nivel de aceite de motor (%)", "requerido": true, "min": 0, "max": 100, "falla": { "op": "lt", "valor": 20 } },
+        { "id": "fuga", "tipo": "si_no", "etiqueta": "¿Hay fugas de aceite o combustible?", "requerido": true, "critico": true, "falla": { "op": "eq", "valor": true } },
+        { "id": "fuga_fotos", "tipo": "foto", "etiqueta": "Fotos de la fuga", "fotosMin": 2, "requerido": true, "visibleSi": { "campo": "fuga", "op": "eq", "valor": true } }
+      ] },
+      { "id": "estructura", "titulo": "Estructura y rodaje", "campos": [
+        { "id": "mangueras", "tipo": "opcion", "etiqueta": "Estado de mangueras", "opciones": ["Bien", "Desgaste", "Dañadas"], "requerido": true, "critico": true, "falla": { "op": "eq", "valor": "Dañadas" } },
+        { "id": "rodaje", "tipo": "opcion", "etiqueta": "Orugas o neumáticos", "opciones": ["Bien", "Desgaste moderado", "Desgaste severo"], "requerido": true, "falla": { "op": "eq", "valor": "Desgaste severo" } }
+      ] },
+      { "id": "seguridad", "titulo": "Seguridad", "campos": [
+        { "id": "alarma_retroceso", "tipo": "si_no", "etiqueta": "¿Funciona la alarma de retroceso?", "requerido": true, "critico": true, "falla": { "op": "eq", "valor": false } },
+        { "id": "extintor", "tipo": "si_no", "etiqueta": "¿Extintor vigente a bordo?", "requerido": true, "falla": { "op": "eq", "valor": false } }
+      ] },
+      { "id": "cierre", "titulo": "Cierre", "campos": [
+        { "id": "fotos_generales", "tipo": "foto", "etiqueta": "Fotos generales del equipo", "fotosMin": 1, "requerido": true },
+        { "id": "firma", "tipo": "firma", "etiqueta": "Firma del inspector", "requerido": true }
+      ] }
+    ]
+  }
+]

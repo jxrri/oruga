@@ -3,8 +3,15 @@ import type { Recurso } from './permisos';
 import AppLayout from './AppLayout';
 import ErrorDeModulo from './ErrorDeModulo';
 import RutaProtegida from './RutaProtegida';
+import { useUsuario } from './hooks';
+import { rutaInicial } from './layout/navegacion';
 
 type Modulo = { default: React.ComponentType };
+
+/** Cada rol aterriza en su primer módulo permitido (el inspector no ve el tablero). */
+function IndiceInicial() {
+  return <Navigate to={rutaInicial(useUsuario())} replace />;
+}
 
 /** Ruta perezosa con su propio Error Boundary (SPEC §12.2) y control de permiso por recurso. */
 const ruta = (path: string, cargar: () => Promise<Modulo>, recurso: Recurso) => ({
@@ -33,7 +40,7 @@ export const router = createBrowserRouter(
       Component: AppLayout,
       ErrorBoundary: ErrorDeModulo,
       children: [
-        { index: true, element: <Navigate to="/tablero" replace /> },
+        { index: true, Component: IndiceInicial },
         ruta('tablero', () => import('@/features/tablero/pages/TableroPage'), 'tablero'),
         ruta('planificador', () => import('@/features/planificador/pages/PlanificadorPage'), 'reserva'),
         ruta('inventario', () => import('@/features/inventario/pages/InventarioPage'), 'activo'),

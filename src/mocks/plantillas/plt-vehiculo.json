@@ -1,0 +1,23 @@
+[
+  {
+    "id": "plt-vehiculo",
+    "nombre": "Inspección de vehículo",
+    "version": 1,
+    "categoriaIds": ["cat-camion-volteo", "cat-camioneta-pickup", "cat-furgon-carga", "cat-minibus"],
+    "secciones": [
+      { "id": "exterior", "titulo": "Exterior", "campos": [
+        { "id": "carroceria", "tipo": "opcion", "etiqueta": "Carrocería", "opciones": ["Sin daños", "Rayones", "Abolladuras"], "requerido": true, "falla": { "op": "eq", "valor": "Abolladuras" } },
+        { "id": "danos_fotos", "tipo": "foto", "etiqueta": "Fotos de los daños", "fotosMin": 1, "requerido": true, "visibleSi": { "campo": "carroceria", "op": "neq", "valor": "Sin daños" } },
+        { "id": "luces_falla", "tipo": "multi", "etiqueta": "Luces con falla", "opciones": ["Delanteras", "Traseras", "Freno", "Direccionales"], "requerido": false, "falla": { "op": "in", "valor": ["Delanteras", "Traseras", "Freno", "Direccionales"] } }
+      ] },
+      { "id": "seguridad", "titulo": "Frenos y neumáticos", "campos": [
+        { "id": "frenos_ok", "tipo": "si_no", "etiqueta": "¿Frenos responden bien?", "requerido": true, "critico": true, "falla": { "op": "eq", "valor": false } },
+        { "id": "labrado_mm", "tipo": "numero", "etiqueta": "Labrado mínimo de neumáticos (mm)", "requerido": true, "min": 0, "max": 20, "critico": true, "falla": { "op": "lt", "valor": 2 } }
+      ] },
+      { "id": "cierre", "titulo": "Cierre", "campos": [
+        { "id": "fotos_generales", "tipo": "foto", "etiqueta": "Fotos generales del vehículo", "fotosMin": 1, "requerido": true },
+        { "id": "firma", "tipo": "firma", "etiqueta": "Firma del inspector", "requerido": true }
+      ] }
+    ]
+  }
+]

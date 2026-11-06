@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
+import 'leaflet/dist/leaflet.css';
 import './index.css';
 import { configurarReloj } from '@/shared/lib/fechas';
 import { Providers } from '@/app/providers';

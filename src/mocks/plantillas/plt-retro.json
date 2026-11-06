@@ -1,0 +1,46 @@
+[
+  {
+    "id": "plt-retro",
+    "nombre": "Inspección retroexcavadora",
+    "version": 2,
+    "categoriaIds": ["cat-retroexcavadora"],
+    "secciones": [
+      { "id": "hidraulico", "titulo": "Sistema hidráulico", "campos": [
+        { "id": "fuga", "tipo": "si_no", "etiqueta": "¿Hay fugas de aceite hidráulico?", "requerido": true, "critico": true, "falla": { "op": "eq", "valor": true } },
+        { "id": "fuga_fotos", "tipo": "foto", "etiqueta": "Fotos de la fuga", "fotosMin": 1, "requerido": true, "visibleSi": { "campo": "fuga", "op": "eq", "valor": true } },
+        { "id": "nivel_aceite", "tipo": "nivel", "etiqueta": "Nivel de aceite hidráulico (%)", "requerido": true, "min": 0, "max": 100, "falla": { "op": "lt", "valor": 25 } }
+      ] },
+      { "id": "cierre", "titulo": "Cierre", "campos": [
+        { "id": "fotos_generales", "tipo": "foto", "etiqueta": "Fotos generales del equipo", "fotosMin": 1, "requerido": true },
+        { "id": "firma", "tipo": "firma", "etiqueta": "Firma del inspector", "requerido": true }
+      ] }
+    ]
+  },
+  {
+    "id": "plt-retro",
+    "nombre": "Inspección retroexcavadora",
+    "version": 3,
+    "categoriaIds": ["cat-retroexcavadora"],
+    "secciones": [
+      { "id": "motor", "titulo": "Motor", "campos": [
+        { "id": "nivel_aceite_motor", "tipo": "nivel", "etiqueta": "Nivel de aceite de motor (%)", "requerido": true, "min": 0, "max": 100, "falla": { "op": "lt", "valor": 20 } },
+        { "id": "refrigerante_ok", "tipo": "si_no", "etiqueta": "¿Refrigerante en nivel?", "requerido": true, "falla": { "op": "eq", "valor": false } }
+      ] },
+      { "id": "hidraulico", "titulo": "Sistema hidráulico", "campos": [
+        { "id": "fuga", "tipo": "si_no", "etiqueta": "¿Hay fugas de aceite hidráulico?", "requerido": true, "critico": true, "falla": { "op": "eq", "valor": true } },
+        { "id": "fuga_ubicacion", "tipo": "opcion", "etiqueta": "Ubicación de la fuga", "opciones": ["Brazo", "Cucharón", "Estabilizadores", "Bomba"], "requerido": true, "visibleSi": { "campo": "fuga", "op": "eq", "valor": true } },
+        { "id": "fuga_fotos", "tipo": "foto", "etiqueta": "Fotos de la fuga", "fotosMin": 2, "requerido": true, "visibleSi": { "campo": "fuga", "op": "eq", "valor": true } },
+        { "id": "nivel_aceite", "tipo": "nivel", "etiqueta": "Nivel de aceite hidráulico (%)", "requerido": true, "min": 0, "max": 100, "falla": { "op": "lt", "valor": 25 } }
+      ] },
+      { "id": "seguridad", "titulo": "Seguridad", "campos": [
+        { "id": "alarma_retroceso", "tipo": "si_no", "etiqueta": "¿Funciona la alarma de retroceso?", "requerido": true, "critico": true, "falla": { "op": "eq", "valor": false } },
+        { "id": "extintor", "tipo": "si_no", "etiqueta": "¿Extintor vigente a bordo?", "requerido": true, "falla": { "op": "eq", "valor": false } }
+      ] },
+      { "id": "cierre", "titulo": "Cierre", "campos": [
+        { "id": "fotos_generales", "tipo": "foto", "etiqueta": "Fotos generales del equipo", "fotosMin": 1, "requerido": true },
+        { "id": "notas", "tipo": "texto", "etiqueta": "Notas del inspector", "requerido": false },
+        { "id": "firma", "tipo": "firma", "etiqueta": "Firma del inspector", "requerido": true }
+      ] }
+    ]
+  }
+]

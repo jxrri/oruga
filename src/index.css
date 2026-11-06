@@ -151,6 +151,136 @@
       repeating-linear-gradient(45deg, color-mix(in oklab, var(--ink-3) 30%, transparent) 0 1px, transparent 1px 8px),
       repeating-linear-gradient(-45deg, color-mix(in oklab, var(--ink-3) 30%, transparent) 0 1px, transparent 1px 8px);
   }
+  /* Margen de preparación / limpieza entre reservas */
+  .trama-buffer {
+    background-color: color-mix(in oklab, var(--ink-3) 8%, transparent);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklab, var(--ink-3) 20%, transparent) 0 2px,
+      transparent 2px 7px
+    );
+    border: 1px dashed color-mix(in oklab, var(--ink-3) 38%, transparent);
+  }
+  /* Contención de pistas del timeline para aislar reflows en arrastre (60 fps) */
+  .pista-timeline-contain {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1680px auto 52px;
+  }
+}
+
+@supports not (content-visibility: auto) {
+  .pista-timeline-contain {
+    contain: layout style paint;
+  }
+}
+
+/* Superficies instrumentales de cápsulas del timeline: contraste AA (>= 4,5:1) en claro y oscuro */
+.barra-res-borrador {
+  --barra-espina: var(--res-borrador);
+  background-color: color-mix(in oklab, var(--res-borrador) 14%, var(--panel));
+  border-color: color-mix(in oklab, var(--res-borrador) 62%, var(--line-strong));
+  color: var(--ink);
+}
+.barra-res-borrador:hover {
+  background-color: color-mix(in oklab, var(--res-borrador) 22%, var(--panel));
+}
+
+.barra-res-confirmada {
+  --barra-espina: var(--res-confirmada);
+  background-color: color-mix(in oklab, var(--res-confirmada) 13%, var(--panel));
+  border-color: color-mix(in oklab, var(--res-confirmada) 52%, var(--line-strong));
+  color: color-mix(in oklab, var(--res-confirmada) 66%, black);
+}
+.barra-res-confirmada:hover {
+  background-color: color-mix(in oklab, var(--res-confirmada) 21%, var(--panel));
+}
+
+.barra-res-en-curso {
+  --barra-espina: var(--res-en-curso);
+  background-color: color-mix(in oklab, var(--res-en-curso) 18%, var(--panel));
+  border-color: color-mix(in oklab, var(--res-en-curso) 62%, var(--line-strong));
+  color: color-mix(in oklab, var(--res-en-curso) 46%, black);
+}
+.barra-res-en-curso:hover {
+  background-color: color-mix(in oklab, var(--res-en-curso) 26%, var(--panel));
+}
+
+.barra-res-finalizada {
+  --barra-espina: var(--res-finalizada);
+  background-color: color-mix(in oklab, var(--res-finalizada) 14%, var(--panel));
+  border-color: color-mix(in oklab, var(--res-finalizada) 52%, var(--line-strong));
+  color: color-mix(in oklab, var(--res-finalizada) 56%, black);
+}
+.barra-res-finalizada:hover {
+  background-color: color-mix(in oklab, var(--res-finalizada) 22%, var(--panel));
+}
+
+.barra-res-cancelada {
+  --barra-espina: var(--res-cancelada);
+  background-color: color-mix(in oklab, var(--res-cancelada) 14%, var(--panel));
+  border-color: color-mix(in oklab, var(--res-cancelada) 52%, var(--line-strong));
+  color: var(--ink-2);
+}
+
+.barra-res-advertencia {
+  --barra-espina: var(--warn);
+  background-color: color-mix(in oklab, var(--warn) 15%, var(--panel));
+  border-color: var(--warn);
+  color: color-mix(in oklab, var(--warn) 66%, black);
+}
+
+.barra-res-bloqueante {
+  --barra-espina: var(--danger);
+  background-color: color-mix(in oklab, var(--danger) 15%, var(--panel));
+  border-color: var(--danger);
+  color: color-mix(in oklab, var(--danger) 68%, black);
+}
+
+[data-tema='oscuro'] .barra-res-confirmada {
+  background-color: color-mix(in oklab, var(--res-confirmada) 18%, var(--panel));
+  color: color-mix(in oklab, var(--res-confirmada) 60%, white);
+}
+[data-tema='oscuro'] .barra-res-confirmada:hover {
+  background-color: color-mix(in oklab, var(--res-confirmada) 26%, var(--panel));
+}
+
+[data-tema='oscuro'] .barra-res-en-curso {
+  background-color: color-mix(in oklab, var(--res-en-curso) 17%, var(--panel));
+  color: color-mix(in oklab, var(--res-en-curso) 64%, white);
+}
+[data-tema='oscuro'] .barra-res-en-curso:hover {
+  background-color: color-mix(in oklab, var(--res-en-curso) 25%, var(--panel));
+}
+
+[data-tema='oscuro'] .barra-res-finalizada {
+  background-color: color-mix(in oklab, var(--res-finalizada) 20%, var(--panel));
+  color: color-mix(in oklab, var(--res-finalizada) 54%, white);
+}
+[data-tema='oscuro'] .barra-res-finalizada:hover {
+  background-color: color-mix(in oklab, var(--res-finalizada) 28%, var(--panel));
+}
+
+[data-tema='oscuro'] .barra-res-advertencia {
+  background-color: color-mix(in oklab, var(--warn) 18%, var(--panel));
+  color: color-mix(in oklab, var(--warn) 62%, white);
+}
+
+[data-tema='oscuro'] .barra-res-bloqueante {
+  background-color: color-mix(in oklab, var(--danger) 18%, var(--panel));
+  color: color-mix(in oklab, var(--danger) 62%, white);
+}
+
+@media (forced-colors: active) {
+  .barra-res-borrador,
+  .barra-res-confirmada,
+  .barra-res-en-curso,
+  .barra-res-finalizada,
+  .barra-res-cancelada,
+  .barra-res-advertencia,
+  .barra-res-bloqueante {
+    border-color: ButtonText;
+    outline: 1px solid transparent;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -162,4 +292,62 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Movimiento de capas (T4): entradas y salidas de diálogos, paneles y menús. Solo transform y opacity. */
+@theme {
+  --animate-capa-entra: capa-entra 180ms var(--ease-salida);
+  --animate-capa-sale: capa-sale 140ms ease-in;
+  --animate-dialogo-entra: dialogo-entra 220ms var(--ease-salida);
+  --animate-dialogo-sale: dialogo-sale 140ms ease-in;
+  --animate-panel-der-entra: panel-der-entra 260ms var(--ease-salida);
+  --animate-panel-der-sale: panel-der-sale 180ms ease-in;
+  --animate-panel-izq-entra: panel-izq-entra 260ms var(--ease-salida);
+  --animate-panel-izq-sale: panel-izq-sale 180ms ease-in;
+  --animate-flotante-entra: flotante-entra 160ms var(--ease-salida);
+
+  @keyframes capa-entra { from { opacity: 0; } }
+  @keyframes capa-sale { to { opacity: 0; } }
+  @keyframes dialogo-entra { from { opacity: 0; transform: translateY(6px) scale(0.98); } }
+  @keyframes dialogo-sale { to { opacity: 0; transform: scale(0.98); } }
+  @keyframes panel-der-entra { from { transform: translateX(100%); } }
+  @keyframes panel-der-sale { to { transform: translateX(100%); } }
+  @keyframes panel-izq-entra { from { transform: translateX(-100%); } }
+  @keyframes panel-izq-sale { to { transform: translateX(-100%); } }
+  @keyframes flotante-entra { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+}
+
+@layer utilities {
+  /* Póster del login sin WebGL: curvas de nivel con tokens, eco estático de la escena 3D */
+  .poster-topografico {
+    background-color: var(--canvas);
+    background-image:
+      radial-gradient(120% 80% at 70% 40%, transparent 40%, var(--canvas) 100%),
+      repeating-radial-gradient(
+        ellipse 70% 55% at 62% 58%,
+        transparent 0 26px,
+        color-mix(in oklab, var(--ink-3) 28%, transparent) 26px 27px
+      ),
+      repeating-radial-gradient(
+        ellipse 40% 34% at 24% 30%,
+        transparent 0 22px,
+        color-mix(in oklab, var(--ink-3) 18%, transparent) 22px 23px
+      );
+  }
+  .texto-balance {
+    text-wrap: balance;
+  }
+  .texto-bonito {
+    text-wrap: pretty;
+  }
+}
+
+/* Destello único del indicador en vivo y barra de progreso de navegación */
+@keyframes destello {
+  0% { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0; transform: scale(3); }
+}
+@keyframes progreso {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(0.85); }
 }
