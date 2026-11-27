@@ -206,6 +206,10 @@ export interface Usuario {
   nombre: string;
   sedeId: ID;
   rol: Rol;
+  /** Identifica la cuenta al entrar; siempre en minúsculas */
+  correo: string;
+  /** Cuenta de demostración sembrada (clave pública) */
+  demo?: boolean;
 }
 
 export type TipoEvento = 'reserva.actualizada' | 'activo.estado' | 'activo.posicion' | 'orden.actualizada';
@@ -419,7 +423,16 @@ export interface ClienteDetalle {
 }
 
 export interface LoginBody {
-  usuarioId: ID;
+  correo: string;
+  clave: string;
+}
+
+export interface RegistroBody {
+  nombre: string;
+  correo: string;
+  clave: string;
+  rol: Rol;
+  sedeId: ID;
 }
 
 export interface Sesion {

@@ -2,7 +2,8 @@
  * Datos simulados deterministas (SPEC §11.1): Faker con semilla fija y todo relativo al reloj de demo.
  * Mismo `hoy` y misma semilla producen exactamente los mismos datos.
  */
-import { fakerES as faker } from '@faker-js/faker';
+// Faker a medida, sin el locale en (unos 500 kB): la semilla solo usa nombres en español y generadores sin datos de idioma.
+import { base, es, Faker } from '@faker-js/faker';
 import type {
   Activo,
   CambioEstadoActivo,
@@ -55,6 +56,8 @@ export interface Semilla {
   tasa: TasaCambio;
 }
 
+const faker = new Faker({ locale: [es, base] });
+
 export const SEMILLA = 2026;
 
 const horario = { abre: '07:00', cierra: '18:00' };
@@ -66,11 +69,11 @@ const SEDES: Sede[] = [
 ];
 
 const USUARIOS: Usuario[] = [
-  { id: 'usr-admin', nombre: 'Mariana Urdaneta', sedeId: 'sede-mcbo', rol: 'admin' },
-  { id: 'usr-plan', nombre: 'Luis Alberto Ferrer', sedeId: 'sede-mcbo', rol: 'planificador' },
-  { id: 'usr-insp', nombre: 'José Gregorio Morillo', sedeId: 'sede-mcbo', rol: 'inspector' },
-  { id: 'usr-mant', nombre: 'Carlos Briceño', sedeId: 'sede-mcbo', rol: 'mantenimiento' },
-  { id: 'usr-ger', nombre: 'Andreína Colmenares', sedeId: 'sede-ccs', rol: 'gerente' },
+  { id: 'usr-admin', nombre: 'Mariana Urdaneta', sedeId: 'sede-mcbo', rol: 'admin', correo: 'mariana.urdaneta@oruga.com.ve', demo: true },
+  { id: 'usr-plan', nombre: 'Luis Alberto Ferrer', sedeId: 'sede-mcbo', rol: 'planificador', correo: 'luis.ferrer@oruga.com.ve', demo: true },
+  { id: 'usr-insp', nombre: 'José Gregorio Morillo', sedeId: 'sede-mcbo', rol: 'inspector', correo: 'jose.morillo@oruga.com.ve', demo: true },
+  { id: 'usr-mant', nombre: 'Carlos Briceño', sedeId: 'sede-mcbo', rol: 'mantenimiento', correo: 'carlos.briceno@oruga.com.ve', demo: true },
+  { id: 'usr-ger', nombre: 'Andreína Colmenares', sedeId: 'sede-ccs', rol: 'gerente', correo: 'andreina.colmenares@oruga.com.ve', demo: true },
 ];
 
 interface DefCategoria {
@@ -301,6 +304,28 @@ const ESPECIALES = new Set<ID>([
 
 const DESCRIPCION_PREVENTIVO = ['Cambio de aceite y filtros', 'Revisión de sistema hidráulico y engrase', 'Cambio de filtros de aire y combustible'];
 const DESCRIPCION_CORRECTIVO = ['Reparación del sistema de frenos', 'Cambio de bomba hidráulica', 'Reparación de fuga en cilindro del brazo'];
+
+export function generarBaseVacia(hoy: InstanteUTC = ahora()): Semilla {
+  const zonaDe = new Map(SEDES.map((s) => [s.id, s.zonaHoraria]));
+  const civilDe = (sedeId: ID) => fechaCivilDe(hoy, zonaDe.get(sedeId)!);
+  return {
+    hoy,
+    sedes: structuredClone(SEDES),
+    categorias: DEFS.map(categoriaDe),
+    usuarios: structuredClone(USUARIOS),
+    activos: [],
+    clientes: [],
+    reservas: [],
+    ordenes: [],
+    planes: DEFS.flatMap(planesDe),
+    plantillas: structuredClone([...retro, ...maquinaria, ...vehiculo]) as unknown as PlantillaInspeccion[],
+    inspecciones: [],
+    historialReservas: [],
+    historialEstados: [],
+    obras: {},
+    tasa: { valor: 268.47, fecha: civilDe('sede-ccs'), fuente: 'BCV (simulada)' },
+  };
+}
 
 export function generarSemilla(hoy: InstanteUTC = ahora()): Semilla {
   faker.seed(SEMILLA);

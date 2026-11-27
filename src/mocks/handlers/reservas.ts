@@ -72,7 +72,7 @@ export const reservas = [
     const aceptadas = b.advertenciasAceptadas ?? [];
     const rechazo = rechazoPorConflictos(conflictosPara({ ...b, estado: 'borrador' }), aceptadas);
     if (rechazo) return rechazo;
-    const numero = Math.max(...db.reservas.map((r) => Number(r.codigo.slice(-5)))) + 1;
+    const numero = Math.max(0, ...db.reservas.map((r) => Number(r.codigo.slice(-5)) || 0)) + 1;
     const r: Reserva = {
       ...b,
       id: nuevoId('res'),

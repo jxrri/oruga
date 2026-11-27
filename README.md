@@ -13,6 +13,20 @@ Frontend operativo (Fase 1) desarrollado con React 19, TypeScript estricto, Tail
 7. **Directorio de Clientes (`/clientes`, `/clientes/:id`)**: Registro con validación de RIF/cédula, bloqueo administrativo con restricción en confirmación de reservas e historial de facturación (`RF-CLI-01` a `RF-CLI-03`).
 8. **Ubicación y Telemetría (`/ubicacion`)**: Mapa interactivo con marcadores por estado visible, simulación de movimiento en tiempo real cada 4 s para activos en alquiler y alertas de geocerca alrededor de las obras (`RF-UBI-01` a `RF-UBI-03`).
 
+## Cuentas y acceso
+
+La app pide correo y clave en `/login` y permite crear una cuenta en `/registro`. Como esta fase no tiene backend, las cuentas viven en una base de datos local del navegador:
+
+- **Dónde**: IndexedDB, base `keyval-store`, registro `oruga.cuentas` (`src/mocks/cuentas.ts`). Guarda las cuentas registradas, las credenciales y las sesiones abiertas.
+- **Claves**: nunca en texto claro. Se guarda una sal aleatoria por cuenta y el hash PBKDF2-SHA256 (600 000 iteraciones) calculado con Web Crypto.
+- **Sesión**: al entrar se emite un token aleatorio que la app envía como `Authorization: Bearer <token>`. Si el servidor simulado no lo reconoce responde 401 y la app vuelve al login.
+- **Cuentas de demostración**: las cinco cuentas de la semilla (una por rol) usan la clave `oruga2026`; la pantalla de login las lista y rellena el formulario con un toque.
+- **Borrar todo**: en las herramientas del navegador, Application > IndexedDB > `keyval-store` > eliminar. Las cuentas de demostración se vuelven a crear solas.
+
+Límite a tener presente: la base está en el equipo de quien usa la app, así que protege la clave (no se puede leer), pero no es una barrera de seguridad frente a alguien con acceso a ese navegador. Con un backend real (`VITE_API_URL`), el mismo formulario llama a `POST auth/login` y `POST auth/registro` sin cambios en las pantallas.
+
+Usa `npm run dev` o un sitio con HTTPS: Web Crypto solo está disponible en `localhost` y en contextos seguros.
+
 ## Requisitos previos
 
 - Node.js 20+

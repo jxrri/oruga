@@ -4,6 +4,7 @@ import AppLayout from './AppLayout';
 import ErrorDeModulo from './ErrorDeModulo';
 import RutaProtegida from './RutaProtegida';
 import { useUsuario } from './hooks';
+import { MarcaOruga } from './layout/MarcaOruga';
 import { rutaInicial } from './layout/navegacion';
 
 type Modulo = { default: React.ComponentType };
@@ -11,6 +12,15 @@ type Modulo = { default: React.ComponentType };
 /** Cada rol aterriza en su primer módulo permitido (el inspector no ve el tablero). */
 function IndiceInicial() {
   return <Navigate to={rutaInicial(useUsuario())} replace />;
+}
+
+/** Lo que se ve mientras baja el módulo de la ruta inicial, en lugar de una página en blanco. */
+function Arranque() {
+  return (
+    <div role="status" aria-label="Cargando Oruga" className="grid min-h-[100dvh] place-items-center bg-canvas">
+      <MarcaOruga className="size-12 animate-pulse rounded-xl" />
+    </div>
+  );
 }
 
 /** Ruta perezosa con su propio Error Boundary (SPEC §12.2) y control de permiso por recurso. */
@@ -32,12 +42,18 @@ const ruta = (path: string, cargar: () => Promise<Modulo>, recurso: Recurso) => 
 export const router = createBrowserRouter(
   [
     {
-      path: '/login',
-      lazy: async () => ({ Component: (await import('@/features/auth/pages/LoginPage')).default }),
+      // Login y registro comparten marco: la escena 3D no se vuelve a crear al pasar de uno a otro.
+      HydrateFallback: Arranque,
+      lazy: async () => ({ Component: (await import('@/features/auth/components/MarcoAuth')).MarcoAuth }),
+      children: [
+        { path: '/login', lazy: async () => ({ Component: (await import('@/features/auth/pages/LoginPage')).default }) },
+        { path: '/registro', lazy: async () => ({ Component: (await import('@/features/auth/pages/RegistroPage')).default }) },
+      ],
     },
     {
       path: '/',
       Component: AppLayout,
+      HydrateFallback: Arranque,
       ErrorBoundary: ErrorDeModulo,
       children: [
         { index: true, Component: IndiceInicial },

@@ -1,5 +1,10 @@
-import { useId, useSyncExternalStore } from 'react';
+import { useId, useState, useSyncExternalStore } from 'react';
+import { toast } from 'sonner';
+import { TrashIcon } from '@phosphor-icons/react';
+import { api } from '@/api/baseApi';
 import { cambiarConfigMock, leerConfigMock, suscribirConfigMock, type ConfigMock } from '@/mocks/config';
+import { vaciarDb } from '@/mocks/db';
+import { Button } from '@/shared/ui/Button';
 import { SegmentedControl } from '@/shared/ui/SegmentedControl';
 import { Sheet, SheetContent } from '@/shared/ui/Sheet';
 import { Switch } from '@/shared/ui/Switch';
@@ -38,8 +43,22 @@ export default function DevPanel() {
   const dispatch = useAppDispatch();
   const config = useSyncExternalStore(suscribirConfigMock, leerConfigMock);
   const idFalla = useId();
+  const [vaciando, setVaciando] = useState(false);
   const codigo: Codigo = config.forzar ? (String(config.forzar.codigo) as Codigo) : 'ninguno';
   const latencia = latenciaActual(config.latencia);
+
+  const handleVaciarDb = async () => {
+    setVaciando(true);
+    try {
+      await vaciarDb();
+      dispatch(api.util.resetApiState());
+      toast.success('Base de datos local vaciada', {
+        description: 'Se eliminaron activos, clientes, reservas, órdenes e inspecciones.',
+      });
+    } finally {
+      setVaciando(false);
+    }
+  };
 
   return (
     <Sheet open={abierto} onOpenChange={(v) => dispatch(panelDevAlternado(v))}>
@@ -110,6 +129,21 @@ export default function DevPanel() {
               {Math.round(config.fallaEvidencias * 100)}&nbsp;%
             </output>
           </div>
+        </Seccion>
+
+        <Seccion
+          titulo="Base de datos local"
+          ayuda="Borra toda la flota, clientes, reservas, órdenes e inspecciones para empezar desde cero."
+        >
+          <Button
+            variante="peligro"
+            tamano="sm"
+            icono={TrashIcon}
+            cargando={vaciando ? 'Vaciando…' : false}
+            onClick={() => void handleVaciarDb()}
+          >
+            Vaciar base de datos
+          </Button>
         </Seccion>
       </SheetContent>
     </Sheet>

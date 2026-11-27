@@ -14,7 +14,7 @@ function Login() {
 
 function montar(rol: Rol | null, ruta: string) {
   const sesion: Sesion | null = rol
-    ? { token: 't', usuario: { id: 'usr-x', nombre: 'Yelitza Camacho', sedeId: 'sede-mcbo', rol } }
+    ? { token: 't', usuario: { id: 'usr-x', nombre: 'Yelitza Camacho', sedeId: 'sede-mcbo', rol, correo: 'yelitza.camacho@oruga.com.ve' } }
     : null;
   const store = configureStore({ reducer: { auth }, preloadedState: { auth: { sesion } } });
   const router = createMemoryRouter(

@@ -47,6 +47,9 @@ export const moduloDeRuta = (pathname: string) =>
 /** Destino de login que recuerda adónde volver. */
 export const destinoLogin = (pathname: string, search = '') => `/login?volver=${encodeURIComponent(pathname + search)}`;
 
-/** Solo rutas internas: evita redirecciones abiertas con ?volver=//otro-sitio. */
+/**
+ * Solo rutas internas: evita redirecciones abiertas con ?volver=//otro-sitio. También se rechazan la barra
+ * invertida y los caracteres de control, que el navegador normaliza a '//' al resolver la URL.
+ */
 export const volverSeguro = (valor: string | null): string | null =>
-  valor && valor.startsWith('/') && !valor.startsWith('//') && !valor.startsWith('/login') ? valor : null;
+  valor && /^\/(?![/\\])[^\\\p{Cc}]*$/u.test(valor) && !valor.startsWith('/login') ? valor : null;

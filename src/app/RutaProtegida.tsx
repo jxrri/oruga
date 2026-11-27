@@ -34,7 +34,7 @@ export default function RutaProtegida({ recurso, children }: { recurso: Recurso;
           {conAcceso.length
             ? `Pueden abrirlo: ${enumerar(conAcceso)}.`
             : 'Ningún rol de la demo puede abrirlo.'}{' '}
-          Cambia de rol desde tu nombre, arriba a la derecha.
+          Para abrirlo, cierra sesión y entra con una cuenta que tenga acceso.
         </p>
       </div>
       <Button asChild variante="primario">

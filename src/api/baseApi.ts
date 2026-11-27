@@ -29,6 +29,7 @@ import type {
   OrdenNueva,
   PlanMantenimiento,
   PlantillaInspeccion,
+  RegistroBody,
   Reserva,
   ReservaCambios,
   ReservaNueva,
@@ -40,6 +41,7 @@ import type {
   ValidacionReserva,
   ValidarReservaBody,
 } from './contrato';
+import { sesionCerrada } from '@/features/auth/authSlice';
 
 interface EstadoConSesion {
   auth: { sesion: Sesion | null };
@@ -52,16 +54,36 @@ const lista = <T extends string>(tipo: T, items: { id: ID }[] | undefined) => [
   { type: tipo, id: 'LISTA' as const },
 ];
 
+const consultaBase = fetchBaseQuery({
+  baseUrl: API_URL,
+  prepareHeaders: (headers, { getState }) => {
+    const token = (getState() as EstadoConSesion).auth.sesion?.token;
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    return headers;
+  },
+});
+
+let apiLista: Promise<unknown> = Promise.resolve();
+
+/**
+ * Hace que las peticiones esperen a `p` (el arranque de MSW en modo demo). Así la interfaz se pinta de
+ * inmediato y solo los datos esperan. Si `p` falla, las peticiones salen igual y muestran su error.
+ */
+export const esperarAntesDeConsultar = (p: Promise<unknown>) => {
+  apiLista = p.catch(() => undefined);
+};
+
+/** Un 401 con sesión abierta significa que el servidor ya no la reconoce: se cierra y RutaProtegida lleva al login. */
+const consultaConSesion: typeof consultaBase = async (args, ctx, extra) => {
+  await apiLista;
+  const r = await consultaBase(args, ctx, extra);
+  if (r.error?.status === 401 && (ctx.getState() as EstadoConSesion).auth.sesion) ctx.dispatch(sesionCerrada());
+  return r;
+};
+
 export const api = createApi({
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({
-    baseUrl: API_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as EstadoConSesion).auth.sesion?.token;
-      if (token) headers.set('Authorization', `Bearer ${token}`);
-      return headers;
-    },
-  }),
+  baseQuery: consultaConSesion,
   tagTypes: [
     'Sede',
     'Categoria',
@@ -80,6 +102,11 @@ export const api = createApi({
   endpoints: (b) => ({
     // Sesión y catálogos
     login: b.mutation<Sesion, LoginBody>({ query: (body) => ({ url: 'auth/login', method: 'POST', body }) }),
+    registro: b.mutation<Sesion, RegistroBody>({
+      query: (body) => ({ url: 'auth/registro', method: 'POST', body }),
+      invalidatesTags: ['Usuario'],
+    }),
+    logout: b.mutation<{ ok: true }, void>({ query: () => ({ url: 'auth/logout', method: 'POST' }) }),
     getUsuarios: b.query<Usuario[], void>({ query: () => 'usuarios', providesTags: ['Usuario'] }),
     getSedes: b.query<Sede[], void>({ query: () => 'sedes', providesTags: ['Sede'] }),
     getCategorias: b.query<Categoria[], void>({ query: () => 'categorias', providesTags: ['Categoria'] }),
@@ -247,6 +274,8 @@ export const api = createApi({
 
 export const {
   useLoginMutation,
+  useRegistroMutation,
+  useLogoutMutation,
   useGetUsuariosQuery,
   useGetSedesQuery,
   useGetCategoriasQuery,

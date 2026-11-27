@@ -3,7 +3,8 @@ import { delay, http } from 'msw';
 import type { Usuario } from '@/api/contrato';
 import { type Accion, ETIQUETA_ROL, puede, type Recurso } from '@/app/permisos';
 import { cambiarConfigMock, leerConfigMock } from './config';
-import { db } from './db';
+import { recargarCuentas, usuarioDeToken } from './cuentas';
+import { guardarDb } from './db';
 
 export const json = (data: unknown, status = 200) => Response.json(data, { status });
 
@@ -38,10 +39,13 @@ export async function leerCuerpo<T>(request: Request): Promise<T | null> {
   }
 }
 
-/** Sesión falsa: "Authorization: Bearer demo.<usuarioId>". */
+/** Token de "Authorization: Bearer <token>", emitido al entrar o al registrarse (cuentas.ts). */
+export const tokenDe = (request: Request): string | null =>
+  /^Bearer (.+)$/.exec(request.headers.get('Authorization') ?? '')?.[1] ?? null;
+
 export function usuarioDe(request: Request): Usuario | null {
-  const m = /^Bearer demo\.(.+)$/.exec(request.headers.get('Authorization') ?? '');
-  return (m && db.usuarios.find((u) => u.id === m[1])) || null;
+  const token = tokenDe(request);
+  return token ? usuarioDeToken(token) : null;
 }
 
 function errorForzado(): Response | null {
@@ -63,7 +67,7 @@ export interface Contexto {
 type Metodo = 'get' | 'post' | 'put' | 'patch';
 
 /** Ruta bajo `${BASE_URL}api/`, con latencia aleatoria y, en escrituras, el error forzado del panel. */
-export function ruta(metodo: Metodo, path: string, resolver: (c: Contexto) => Response | Promise<Response>, opciones: { forzable?: boolean } = {}) {
+export function ruta(metodo: Metodo, path: string, resolver: (c: Contexto) => Response | Promise<Response>, opciones: { forzable?: boolean; publica?: boolean } = {}) {
   return http[metodo](`${import.meta.env.BASE_URL}api/${path}`, async ({ request, params }) => {
     const { latencia } = leerConfigMock();
     await delay(latencia.min + Math.random() * Math.max(0, latencia.max - latencia.min));
@@ -71,7 +75,18 @@ export function ruta(metodo: Metodo, path: string, resolver: (c: Contexto) => Re
       const forzado = errorForzado();
       if (forzado) return forzado;
     }
-    return resolver({ request, params: params as Record<string, string>, query: new URL(request.url).searchParams, usuario: usuarioDe(request) });
+    let usuario = usuarioDe(request);
+    // Antes de dar un token por desconocido se vuelve a leer la base: la sesión pudo abrirse en otra pestaña.
+    if (!usuario && tokenDe(request)) {
+      await recargarCuentas();
+      usuario = usuarioDe(request);
+    }
+    // Token que el servidor no reconoce (sesión cerrada o base local borrada): 401 para que la app vuelva al login.
+    if (!usuario && !opciones.publica && tokenDe(request))
+      return json({ codigo: 'SESION', mensaje: 'Tu sesión venció. Vuelve a entrar.' }, 401);
+    const res = await resolver({ request, params: params as Record<string, string>, query: new URL(request.url).searchParams, usuario });
+    if (metodo !== 'get' && res.ok && !path.startsWith('auth/')) await guardarDb();
+    return res;
   });
 }
 
