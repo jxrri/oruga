@@ -1,42 +1,82 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router';
-import {
-  ArrowLeftIcon,
-  BuildingsIcon,
-  CheckCircleIcon,
-  EnvelopeSimpleIcon,
-  LockKeyIcon,
-  PhoneIcon,
-  PlusIcon,
-  UserIcon,
-} from '@phosphor-icons/react';
+import { useState, type ReactNode } from 'react';
+import { Link, useParams, useNavigate } from 'react-router';
+import { CalendarCheckIcon, CheckCircleIcon, LockKeyIcon, PlusIcon } from '@phosphor-icons/react';
 import { useActualizarClienteMutation, useGetClienteQuery } from '@/api/baseApi';
+import { usePuede } from '@/app/hooks';
+import { useEntrada } from '@/shared/hooks/useEntrada';
+import { cn } from '@/shared/lib/cn';
 import { formatear } from '@/shared/lib/fechas';
-import { Button, ErrorState, Skeleton } from '@/shared/ui';
+import { formatearNumero } from '@/shared/lib/formato';
+import { Badge, Button, EmptyState, ErrorState, Skeleton } from '@/shared/ui';
+import { EncabezadoPagina } from '@/shared/ui/EncabezadoPagina';
 import { Monto } from '@/shared/ui/Monto';
 import { EstadoReservaBadge } from '@/shared/ui/dominio';
+
+const PAGINA = 'mx-auto w-full max-w-[1400px]';
+const DOS_COLUMNAS = 'grid gap-x-10 gap-y-6 lg:grid-cols-[minmax(0,1fr)_20rem]';
+
+/** Fila de una ficha de datos: etiqueta a la izquierda, valor a la derecha (mono solo si es un dato que se copia) */
+function Dato({ etiqueta, children, mono }: { etiqueta: string; children: ReactNode; mono?: boolean }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 py-2.5">
+      <dt className="shrink-0 text-ink-3">{etiqueta}</dt>
+      <dd className={cn('min-w-0 break-words text-right text-ink', mono && 'font-mono text-[13px]')}>{children}</dd>
+    </div>
+  );
+}
 
 export default function ClientePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const puedeEditar = usePuede('editar', 'cliente');
+  const puedeCrearReserva = usePuede('crear', 'reserva');
 
   const { data: detalle, isLoading, error, refetch } = useGetClienteQuery(id ?? '');
   const [actualizarCliente, { isLoading: actualizando }] = useActualizarClienteMutation();
   const [errorAccion, setErrorAccion] = useState<unknown>(null);
 
+  // La entrada se repite cuando la ficha real reemplaza a los esqueletos
+  const ref = useEntrada<HTMLDivElement>([isLoading]);
+
   if (isLoading) {
     return (
-      <div className="p-8 space-y-6">
-        <Skeleton className="h-8 w-44" />
-        <Skeleton className="h-32 w-full rounded-2xl" />
-        <Skeleton className="h-64 w-full rounded-2xl" />
+      <div ref={ref} className={PAGINA}>
+        <div className="mb-5 space-y-3">
+          <Skeleton className="h-4 w-44" />
+          <Skeleton className="h-7 w-64 max-w-full" />
+          <Skeleton className="h-5 w-48" />
+        </div>
+        <div className={DOS_COLUMNAS}>
+          <div className="space-y-6">
+            <div className="flex gap-10">
+              <Skeleton className="h-14 w-28" />
+              <Skeleton className="h-14 w-40" />
+            </div>
+            <div className="tarjeta overflow-hidden">
+              <div className="h-10" />
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex h-12 items-center gap-6 border-t border-line px-4">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-4 w-44" />
+                  <Skeleton className="ml-auto h-[22px] w-24 rounded-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-4 max-lg:order-first">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-6 w-full" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !detalle) {
     return (
-      <div className="p-8">
+      <div ref={ref} className={PAGINA}>
+        <EncabezadoPagina titulo="Cliente" migas={[{ etiqueta: 'Clientes', to: '/clientes' }]} />
         <ErrorState error={error} onReintentar={() => void refetch()} />
       </div>
     );
@@ -60,178 +100,151 @@ export default function ClientePage() {
     }
   };
 
-  const totalFacturadoCentavos = reservas.reduce((acc, r) => acc + (r.montoEstimado || 0), 0);
+  const totalFacturadoCentavos = reservas
+    .filter((r) => r.estado !== 'cancelada' && r.estado !== 'borrador')
+    .reduce((acc, r) => acc + (r.montoEstimado || 0), 0);
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-3.5rem)] bg-background">
-      {/* Barra Superior */}
-      <div className="border-b border-border bg-card/60 px-6 py-3.5 backdrop-blur-md flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button
-            variante="fantasma"
-            tamano="sm"
-            icono={ArrowLeftIcon}
-            onClick={() => navigate('/clientes')}
-          >
-            Clientes
-          </Button>
-          <span className="text-border">/</span>
-          <span className="font-semibold text-xs text-foreground">{cliente.nombre}</span>
-        </div>
+    <div ref={ref} className={PAGINA}>
+      <EncabezadoPagina
+        migas={[{ etiqueta: 'Clientes', to: '/clientes' }, { etiqueta: cliente.nombre }]}
+        titulo={
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            {cliente.nombre}
+            {cliente.estado === 'activo' ? (
+              <Badge tono="ok" icono={CheckCircleIcon}>
+                Activo
+              </Badge>
+            ) : (
+              <Badge tono="danger" icono={LockKeyIcon}>
+                Bloqueado
+              </Badge>
+            )}
+          </span>
+        }
+        acciones={
+          <>
+            {puedeEditar && (
+              <Button
+                icono={cliente.estado === 'activo' ? LockKeyIcon : CheckCircleIcon}
+                onClick={alternarBloqueo}
+                cargando={actualizando}
+              >
+                {cliente.estado === 'activo' ? 'Bloquear cliente' : 'Desbloquear'}
+              </Button>
+            )}
+            {puedeCrearReserva && (
+              <Button asChild variante="primario">
+                <Link to={`/reservas/nueva?clienteId=${cliente.id}`}>
+                  <PlusIcon size={16} aria-hidden />
+                  Nueva reserva
+                </Link>
+              </Button>
+            )}
+          </>
+        }
+      />
 
-        <div className="flex items-center gap-2">
-          <Button
-            variante={cliente.estado === 'activo' ? 'peligro' : 'secundario'}
-            tamano="sm"
-            icono={cliente.estado === 'activo' ? LockKeyIcon : CheckCircleIcon}
-            onClick={alternarBloqueo}
-            cargando={actualizando}
-          >
-            {cliente.estado === 'activo' ? 'Bloquear Cliente' : 'Desbloquear'}
-          </Button>
+      <div className={DOS_COLUMNAS}>
+        <div className="min-w-0 space-y-6" data-entrada>
+          {Boolean(errorAccion) && (
+            <ErrorState error={errorAccion} compacto onCerrar={() => setErrorAccion(null)} />
+          )}
 
-          <Button
-            variante="primario"
-            tamano="sm"
-            icono={PlusIcon}
-            onClick={() => navigate('/reservas/nueva')}
-          >
-            Nueva Reserva
-          </Button>
-        </div>
-      </div>
-
-      {/* Hero Cliente */}
-      <div className="border-b border-border/80 bg-card/30 p-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2.5">
-              <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
-                {cliente.tipo === 'empresa' ? (
-                  <BuildingsIcon className="h-6 w-6" />
-                ) : (
-                  <UserIcon className="h-6 w-6" />
-                )}
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-bold tracking-tight text-foreground">{cliente.nombre}</h1>
-                  {cliente.estado === 'activo' ? (
-                    <span className="rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
-                      Activo
-                    </span>
-                  ) : (
-                    <span className="rounded-full bg-destructive/15 border border-destructive/30 px-2 py-0.5 text-[10px] font-bold text-destructive">
-                      Bloqueado
-                    </span>
-                  )}
-                </div>
-                <span className="text-xs font-mono text-muted-foreground uppercase">
-                  {cliente.tipo} · {cliente.documento}
-                </span>
-              </div>
+          {/* Indicadores: el valor va en tinta, sin caja ni color de adorno */}
+          <dl className="flex flex-wrap gap-x-12 gap-y-4">
+            <div>
+              <dt className="text-[13px] text-ink-3">Reservas totales</dt>
+              <dd className="tabular mt-1 text-2xl font-semibold text-ink">{formatearNumero(reservas.length)}</dd>
             </div>
-
-            <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-muted-foreground pt-1">
-              <span className="flex items-center gap-1.5">
-                <PhoneIcon className="h-3.5 w-3.5 text-primary" />
-                {cliente.telefono}
-              </span>
-              <span>·</span>
-              <span className="flex items-center gap-1.5">
-                <EnvelopeSimpleIcon className="h-3.5 w-3.5 text-primary" />
-                {cliente.email}
-              </span>
+            <div>
+              <dt className="text-[13px] text-ink-3">Facturación acumulada</dt>
+              <dd className="mt-1 text-2xl font-semibold text-ink">
+                <Monto centavos={totalFacturadoCentavos} />
+              </dd>
             </div>
-          </div>
+          </dl>
 
-          {/* Estadísticas de Facturación / Contratos */}
-          <div className="flex items-center gap-4 border-l border-border/60 pl-6 text-xs font-mono">
-            <div className="rounded-xl border border-border bg-card p-3 min-w-[130px]">
-              <span className="text-[10px] text-muted-foreground block">RESERVAS TOTALES</span>
-              <span className="text-lg font-black text-foreground">{reservas.length}</span>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-3 min-w-[140px]">
-              <span className="text-[10px] text-muted-foreground block">FACTURACIÓN ACUMULADA</span>
-              <Monto centavos={totalFacturadoCentavos} className="text-lg font-black text-primary" />
-            </div>
-          </div>
-        </div>
-      </div>
+          <section className="space-y-3">
+            <h2 className="text-[15px] font-semibold text-ink">Historial de alquileres y contratos</h2>
 
-      {/* Historial de Reservas del Cliente */}
-      <div className="max-w-6xl mx-auto w-full p-6 space-y-4 flex-1">
-        {Boolean(errorAccion) && (
-          <ErrorState error={errorAccion} compacto onCerrar={() => setErrorAccion(null)} />
-        )}
-        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-          Historial de Alquileres y Contratos ({reservas.length})
-        </h2>
-
-        <div className="overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur-md shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="border-b border-border bg-muted/30 font-bold uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3">Código</th>
-                  <th className="px-4 py-3">Período de Alquiler</th>
-                  <th className="px-4 py-3">Operador</th>
-                  <th className="px-4 py-3">Importe</th>
-                  <th className="px-4 py-3">Estado</th>
-                  <th className="px-4 py-3 text-right">Acción</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {reservas.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                      No hay registros de alquiler para este cliente.
-                    </td>
-                  </tr>
-                ) : (
-                  reservas.map((r) => (
-                    <tr
-                      key={r.id}
-                      onClick={() => navigate(`/reservas/${r.id}`)}
-                      className="cursor-pointer hover:bg-muted/20 transition-colors"
-                    >
-                      <td className="px-4 py-2.5 font-mono font-bold text-foreground">{r.codigo}</td>
-                      <td className="px-4 py-2.5 font-mono text-muted-foreground">
-                        {formatear(r.inicio, 'America/Caracas', 'dd/MM/yyyy')} →{' '}
-                        {formatear(r.fin, 'America/Caracas', 'dd/MM/yyyy')}
-                      </td>
-                      <td className="px-4 py-2.5 text-muted-foreground">
-                        {r.conOperador ? (
-                          <span className="text-primary font-semibold">Homologado</span>
-                        ) : (
-                          'Sin operador'
-                        )}
-                      </td>
-                      <td className="px-4 py-2.5 font-mono font-bold text-foreground">
-                        <Monto centavos={r.montoEstimado} />
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <EstadoReservaBadge estado={r.estado} />
-                      </td>
-                      <td className="px-4 py-2.5 text-right">
-                        <Button
-                          variante="fantasma"
-                          tamano="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/reservas/${r.id}`);
-                          }}
+            {reservas.length === 0 ? (
+              <EmptyState
+                icono={CalendarCheckIcon}
+                titulo="No hay registros de alquiler para este cliente"
+                className="tarjeta"
+              />
+            ) : (
+              <div className="tarjeta overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th className="th-tabla">Código</th>
+                        <th className="th-tabla">Período de alquiler</th>
+                        <th className="th-tabla">Operador</th>
+                        <th className="th-tabla">Importe</th>
+                        <th className="th-tabla">Estado</th>
+                        <th className="th-tabla">
+                          <span className="sr-only">Acción</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reservas.map((r) => (
+                        <tr
+                          key={r.id}
+                          onClick={() => navigate(`/reservas/${r.id}`)}
+                          className="fila-tabla h-12 cursor-pointer"
                         >
-                          Ver Contrato
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                          <td className="whitespace-nowrap px-4 font-mono text-[13px] font-medium text-ink">
+                            {r.codigo}
+                          </td>
+                          <td className="whitespace-nowrap px-4 font-mono text-[13px] text-ink-2">
+                            {formatear(r.inicio, 'America/Caracas', 'dd/MM/yyyy')} →{' '}
+                            {formatear(r.fin, 'America/Caracas', 'dd/MM/yyyy')}
+                          </td>
+                          <td className={cn('whitespace-nowrap px-4', r.conOperador ? 'text-ink' : 'text-ink-3')}>
+                            {r.conOperador ? 'Homologado' : 'Sin operador'}
+                          </td>
+                          <td className="px-4 font-mono text-[13px] text-ink">
+                            <Monto centavos={r.montoEstimado} />
+                          </td>
+                          <td className="px-4">
+                            <EstadoReservaBadge estado={r.estado} />
+                          </td>
+                          <td className="px-2 text-right">
+                            <Button asChild variante="fantasma" tamano="sm">
+                              <Link to={`/reservas/${r.id}`} onClick={(e) => e.stopPropagation()}>
+                                Ver contrato
+                              </Link>
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </section>
         </div>
+
+        {/* Ficha de datos: lista con líneas finas, sin tarjetas anidadas */}
+        <aside aria-label="Datos del cliente" className="max-lg:order-first" data-entrada>
+          <dl className="divide-y divide-line text-sm">
+            <Dato etiqueta="Tipo">
+              <span className="capitalize">{cliente.tipo}</span>
+            </Dato>
+            <Dato etiqueta="Documento" mono>
+              {cliente.documento}
+            </Dato>
+            <Dato etiqueta="Teléfono">
+              <span className="tabular">{cliente.telefono}</span>
+            </Dato>
+            <Dato etiqueta="Correo">{cliente.email}</Dato>
+          </dl>
+        </aside>
       </div>
     </div>
   );

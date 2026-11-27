@@ -6,10 +6,13 @@ import {
   WrenchIcon,
   XIcon,
 } from '@phosphor-icons/react';
-import type { Categoria, Sede } from '@/api/contrato';
+import type { Categoria, Sede, TipoActivo, TipoMotor } from '@/api/contrato';
 import type { EstadoVisible } from '@/domain/estadoActivo';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { Button, IconButton, SegmentedControl } from '@/shared/ui';
+import { cn } from '@/shared/lib/cn';
+import { IconButton, SegmentedControl } from '@/shared/ui';
+import { Input } from '@/shared/ui/Field';
+import { Select } from '@/shared/ui/Select';
 import {
   filtroCambiado,
   filtrosLimpiados,
@@ -23,19 +26,34 @@ export interface BarraFiltrosInventarioProps {
   conteos: {
     estados: Record<string, number>;
     categorias: Record<string, number>;
+    tipo?: Record<string, number>;
+    motores?: Record<string, number>;
   };
   modoVista: 'tarjetas' | 'tabla';
   onCambioModoVista: (modo: 'tarjetas' | 'tabla') => void;
 }
 
-const ESTADOS_DISPONIBLES: { valor: EstadoVisible; etiqueta: string; color: string }[] = [
-  { valor: 'disponible', etiqueta: 'Disponible', color: 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10' },
-  { valor: 'proxima_salida', etiqueta: 'Próx. Salida', color: 'border-sky-500/40 text-sky-400 bg-sky-500/10' },
-  { valor: 'en_alquiler', etiqueta: 'En Alquiler', color: 'border-blue-500/40 text-blue-400 bg-blue-500/10' },
-  { valor: 'en_mantenimiento', etiqueta: 'En Taller', color: 'border-amber-500/40 text-amber-400 bg-amber-500/10' },
-  { valor: 'fuera_de_servicio', etiqueta: 'Fuera de Servicio', color: 'border-destructive/40 text-destructive bg-destructive/10' },
-  { valor: 'baja', etiqueta: 'Baja', color: 'border-muted text-muted-foreground bg-muted/20' },
+const ESTADOS_DISPONIBLES: { valor: EstadoVisible; etiqueta: string }[] = [
+  { valor: 'disponible', etiqueta: 'Disponible' },
+  { valor: 'proxima_salida', etiqueta: 'Próx. salida' },
+  { valor: 'en_alquiler', etiqueta: 'En alquiler' },
+  { valor: 'en_mantenimiento', etiqueta: 'En taller' },
+  { valor: 'fuera_de_servicio', etiqueta: 'Fuera de servicio' },
+  { valor: 'baja', etiqueta: 'Baja' },
 ];
+
+/** Radix Select no admite el valor vacío: "sin filtro" viaja como este centinela */
+const TODAS = 'todas';
+
+/** Chip de filtro: el seleccionado se marca con el acento suave, nunca con un borde de color */
+const claseChip = (activo: boolean) =>
+  cn(
+    'inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[13px] font-medium pointer-coarse:h-10',
+    'transition-[color,background-color,box-shadow] duration-150 ease-salida',
+    activo
+      ? 'bg-accent-soft text-accent-fg'
+      : 'text-ink-2 ring-1 ring-inset ring-line hover:bg-panel-2 hover:text-ink',
+  );
 
 export function BarraFiltrosInventario({
   categorias,
@@ -49,139 +67,167 @@ export function BarraFiltrosInventario({
   const totalActivos = contarFiltrosActivos(filtros);
 
   return (
-    <div className="space-y-3 border-b border-border bg-card/40 p-4 backdrop-blur-md">
-      {/* Fila principal: Búsqueda, Selectores y Conmutador de Vista */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        {/* Barra de búsqueda */}
-        <div className="relative min-w-[240px] flex-1 max-w-md">
-          <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <input
-            type="text"
-            placeholder="Buscar por código, placa, marca o serial..."
+    <div className="space-y-3">
+      {/* Fila principal: búsqueda a la izquierda, selectores y conmutador de vista a la derecha */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative w-full lg:max-w-[22rem]">
+          <Input
+            icono={MagnifyingGlassIcon}
+            aria-label="Buscar activos"
+            placeholder="Buscar por código, placa, marca o serial…"
             value={filtros.q}
             onChange={(e) => dispatch(filtroCambiado({ q: e.target.value }))}
-            className="h-9 w-full rounded-lg border border-border bg-background pl-9 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="[&_input]:pr-9"
           />
           {filtros.q && (
-            <button
-              type="button"
+            <IconButton
+              icono={XIcon}
+              aria-label="Borrar búsqueda"
+              tamano="sm"
+              tooltip={false}
               onClick={() => dispatch(filtroCambiado({ q: '' }))}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <XIcon className="h-3.5 w-3.5" />
-            </button>
+              className="absolute right-0.5 top-1/2 -translate-y-1/2"
+            />
           )}
         </div>
 
-        {/* Filtros rápidos: Categoría y Sede */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Selector de Categoría */}
-          <select
-            value={filtros.categorias[0] ?? ''}
-            onChange={(e) =>
-              dispatch(
-                filtroCambiado({
-                  categorias: e.target.value ? [e.target.value] : [],
-                }),
-              )
-            }
-            className="h-9 rounded-lg border border-border bg-background px-3 text-xs text-foreground focus:border-primary focus:outline-none"
-          >
-            <option value="">Todas las categorías</option>
-            {categorias.map((c) => (
-              <option key={c.id} value={c.slug}>
-                {c.nombre} ({conteos.categorias[c.slug] ?? 0})
-              </option>
-            ))}
-          </select>
+          <div className="grid basis-full grid-cols-2 gap-2 sm:flex sm:basis-auto">
+            <Select
+              aria-label="Categoría"
+              valor={filtros.categorias[0] ?? TODAS}
+              onCambio={(v) => dispatch(filtroCambiado({ categorias: v === TODAS ? [] : [v] }))}
+              opciones={[
+                { valor: TODAS, etiqueta: 'Todas las categorías' },
+                ...categorias.map((c) => ({
+                  valor: c.slug,
+                  etiqueta: `${c.nombre} (${conteos.categorias[c.slug] ?? 0})`,
+                })),
+              ]}
+              className="sm:w-52"
+            />
 
-          {/* Selector de Sede */}
-          <select
-            value={filtros.sedes[0] ?? ''}
-            onChange={(e) =>
-              dispatch(
-                filtroCambiado({
-                  sedes: e.target.value ? [e.target.value] : [],
-                }),
-              )
-            }
-            className="h-9 rounded-lg border border-border bg-background px-3 text-xs text-foreground focus:border-primary focus:outline-none"
-          >
-            <option value="">Todas las sedes</option>
-            {sedes.map((s) => (
-              <option key={s.id} value={s.clave}>
-                {s.nombre}
-              </option>
-            ))}
-          </select>
+            <Select
+              aria-label="Sede"
+              valor={filtros.sedes[0] ?? TODAS}
+              onCambio={(v) => dispatch(filtroCambiado({ sedes: v === TODAS ? [] : [v] }))}
+              opciones={[
+                { valor: TODAS, etiqueta: 'Todas las sedes' },
+                ...sedes.map((s) => ({ valor: s.clave, etiqueta: s.nombre })),
+              ]}
+              className="sm:w-48"
+            />
+          </div>
 
-          {/* Botón Mantenimiento Próximo */}
-          <Button
-            variante={filtros.mantenimientoProximo ? 'peligro' : 'secundario'}
-            tamano="sm"
-            icono={WrenchIcon}
-            onClick={() =>
-              dispatch(
-                filtroCambiado({
-                  mantenimientoProximo: !filtros.mantenimientoProximo,
-                }),
-              )
-            }
-            className="text-xs"
-          >
-            Próx. Service
-          </Button>
-
-          {/* Limpiar Filtros */}
           {totalActivos > 0 && (
             <IconButton
               icono={ArrowsClockwiseIcon}
               aria-label="Restablecer filtros"
-              tamano="sm"
-              variante="fantasma"
               onClick={() => dispatch(filtrosLimpiados())}
             />
           )}
 
-          {/* Selector Modo Vista */}
           <SegmentedControl
             valor={modoVista}
             onCambio={onCambioModoVista}
             opciones={[
-              { valor: 'tarjetas', etiqueta: '', icono: SquaresFourIcon },
-              { valor: 'tabla', etiqueta: '', icono: TableIcon },
+              { valor: 'tarjetas', etiqueta: 'Tarjetas', icono: SquaresFourIcon },
+              { valor: 'tabla', etiqueta: 'Tabla', icono: TableIcon },
             ]}
             aria-label="Modo de visualización"
-            tamano="sm"
+            className="ml-auto"
           />
         </div>
       </div>
 
-      {/* Fila de Chips de Estado Operativo */}
-      <div className="flex flex-wrap items-center gap-1.5 pt-1">
-        <span className="text-[11px] font-bold text-muted-foreground mr-1 uppercase tracking-wider">
-          Estado:
-        </span>
+      {/* Chips de estado operativo y de mantenimiento próximo */}
+      <div role="group" aria-label="Filtrar por estado" className="flex flex-wrap items-center gap-1.5">
         {ESTADOS_DISPONIBLES.map((est) => {
           const activo = filtros.estados.includes(est.valor);
-          const cantidad = conteos.estados[est.valor] ?? 0;
 
           return (
             <button
               key={est.valor}
               type="button"
+              aria-pressed={activo}
               onClick={() => dispatch(opcionAlternada({ lista: 'estados', valor: est.valor }))}
-              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-all ${
-                activo
-                  ? `${est.color} ring-1 ring-primary/40 shadow-xs font-bold`
-                  : 'border-border/60 bg-background/50 text-muted-foreground hover:bg-muted/40 hover:text-foreground'
-              }`}
+              className={claseChip(activo)}
             >
-              <span>{est.etiqueta}</span>
-              <span className="font-mono text-[10px] opacity-70">({cantidad})</span>
+              {est.etiqueta}
+              <span className={cn('tabular', !activo && 'text-ink-3')}>{conteos.estados[est.valor] ?? 0}</span>
             </button>
           );
         })}
+
+        <span aria-hidden className="mx-1 h-4 w-px bg-line" />
+
+        <button
+          type="button"
+          aria-pressed={filtros.mantenimientoProximo}
+          onClick={() => dispatch(filtroCambiado({ mantenimientoProximo: !filtros.mantenimientoProximo }))}
+          className={claseChip(filtros.mantenimientoProximo)}
+        >
+          <WrenchIcon size={15} aria-hidden />
+          Próx. service
+        </button>
+
+        <span aria-hidden className="mx-1 h-4 w-px bg-line" />
+
+        <Select
+          aria-label="Tipo de activo"
+          tamano="sm"
+          valor={filtros.tipo ?? TODAS}
+          onCambio={(v) => dispatch(filtroCambiado({ tipo: v === TODAS ? null : (v as TipoActivo) }))}
+          opciones={[
+            { valor: TODAS, etiqueta: 'Vehículo y maquinaria' },
+            { valor: 'maquinaria', etiqueta: `Maquinaria (${conteos.tipo?.maquinaria ?? 0})` },
+            { valor: 'vehiculo', etiqueta: `Vehículos (${conteos.tipo?.vehiculo ?? 0})` },
+          ]}
+          className="w-44"
+        />
+
+        <Select
+          aria-label="Tipo de motor"
+          tamano="sm"
+          valor={filtros.motores[0] ?? TODAS}
+          onCambio={(v) => dispatch(filtroCambiado({ motores: v === TODAS ? [] : [v as TipoMotor] }))}
+          opciones={[
+            { valor: TODAS, etiqueta: 'Todos los motores' },
+            { valor: 'diesel', etiqueta: `Diésel (${conteos.motores?.diesel ?? 0})` },
+            { valor: 'gasolina', etiqueta: `Gasolina (${conteos.motores?.gasolina ?? 0})` },
+            { valor: 'electrico', etiqueta: `Eléctrico (${conteos.motores?.electrico ?? 0})` },
+            { valor: 'hibrido', etiqueta: `Híbrido (${conteos.motores?.hibrido ?? 0})` },
+            { valor: 'gas', etiqueta: `Gas (${conteos.motores?.gas ?? 0})` },
+          ]}
+          className="w-40"
+        />
+
+        <div className="flex items-center gap-1.5 text-xs text-ink-3">
+          <span>Libre entre:</span>
+          <input
+            type="date"
+            aria-label="Disponible desde"
+            value={filtros.disponibleEntre?.desde ?? ''}
+            onChange={(e) => {
+              const desde = e.target.value;
+              const hasta = filtros.disponibleEntre?.hasta || desde;
+              dispatch(filtroCambiado({ disponibleEntre: desde ? { desde, hasta: hasta >= desde ? hasta : desde } : null }));
+            }}
+            className="h-8 rounded-lg border border-line bg-panel px-2 text-xs text-ink"
+          />
+          <span>a</span>
+          <input
+            type="date"
+            aria-label="Disponible hasta"
+            value={filtros.disponibleEntre?.hasta ?? ''}
+            onChange={(e) => {
+              const hasta = e.target.value;
+              const desde = filtros.disponibleEntre?.desde || hasta;
+              dispatch(filtroCambiado({ disponibleEntre: hasta ? { desde: desde <= hasta ? desde : hasta, hasta } : null }));
+            }}
+            className="h-8 rounded-lg border border-line bg-panel px-2 text-xs text-ink"
+          />
+        </div>
       </div>
     </div>
   );

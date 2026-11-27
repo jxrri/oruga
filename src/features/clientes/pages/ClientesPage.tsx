@@ -1,25 +1,43 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router';
+import React, { useId, useState, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router';
 import {
-  BuildingsIcon,
   CheckCircleIcon,
   DotsThreeVerticalIcon,
   LockKeyIcon,
   MagnifyingGlassIcon,
   PlusIcon,
-  UserIcon,
   UsersIcon,
   XIcon,
 } from '@phosphor-icons/react';
 import type { Cliente, ClienteNuevo, TipoCliente } from '@/api/contrato';
 import { useActualizarClienteMutation, useCrearClienteMutation, useGetClientesQuery } from '@/api/baseApi';
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyState, ErrorState, Skeleton } from '@/shared/ui';
+import { usePuede } from '@/app/hooks';
+import { useEntrada } from '@/shared/hooks/useEntrada';
+import { formatearNumero, pluralizar } from '@/shared/lib/formato';
+import {
+  Avatar,
+  Badge,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  EmptyState,
+  ErrorState,
+  IconButton,
+  SegmentedControl,
+  Skeleton,
+} from '@/shared/ui';
 import { Dialog, DialogContent } from '@/shared/ui/Dialog';
+import { EncabezadoPagina } from '@/shared/ui/EncabezadoPagina';
 import { Field, Input } from '@/shared/ui/Field';
 import { Select } from '@/shared/ui/Select';
 
 export default function ClientesPage() {
   const navigate = useNavigate();
+  const ref = useEntrada<HTMLDivElement>();
+  const puedeCrear = usePuede('crear', 'cliente');
+  const puedeEditar = usePuede('editar', 'cliente');
   const { data: clientes = [], isLoading, error, refetch } = useGetClientesQuery();
   const [crearCliente, { isLoading: guardandoNuevo }] = useCrearClienteMutation();
   const [actualizarCliente] = useActualizarClienteMutation();
@@ -38,6 +56,7 @@ export default function ClientesPage() {
   const [emailNuevo, setEmailNuevo] = useState('');
   const [errorModal, setErrorModal] = useState<unknown>(null);
   const [errorAccion, setErrorAccion] = useState<unknown>(null);
+  const idFormulario = useId();
 
   // Filtrado de clientes
   const clientesFiltrados = useMemo(() => {
@@ -100,209 +119,217 @@ export default function ClientesPage() {
     }
   };
 
+  // El conteo de registros va en la línea de descripción, no en una píldora junto al título
+  const visibles =
+    clientesFiltrados.length === clientes.length
+      ? pluralizar(clientes.length, 'cliente')
+      : `${formatearNumero(clientesFiltrados.length)} de ${pluralizar(clientes.length, 'cliente')}`;
+  const descripcion =
+    isLoading || error
+      ? 'Directorio, historial de alquileres y control de riesgo operativo.'
+      : `${visibles}, ${pluralizar(clientes.filter((c) => c.estado === 'bloqueado').length, 'bloqueado')}.`;
+
   return (
-    <div className="flex flex-col min-h-[calc(100vh-3.5rem)] bg-background">
-      {/* Cabecera */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border bg-card/60 px-6 py-4 backdrop-blur-md">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold tracking-tight text-foreground">Gestión de Clientes</h1>
-            <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-mono font-bold text-primary">
-              {clientesFiltrados.length} / {clientes.length} clientes
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Directorio corporativo, historial de alquileres y control de riesgo operativo.
-          </p>
-        </div>
+    <div ref={ref} className="mx-auto w-full max-w-[1400px]">
+      <EncabezadoPagina
+        titulo="Clientes"
+        descripcion={descripcion}
+        acciones={
+          puedeCrear && (
+            <Button variante="primario" icono={PlusIcon} onClick={() => setModalNuevo(true)}>
+              Nuevo cliente
+            </Button>
+          )
+        }
+      />
 
-        <Button
-          variante="primario"
-          icono={PlusIcon}
-          onClick={() => setModalNuevo(true)}
-          className="text-xs font-bold"
+      <div className="space-y-6">
+        {/* Barra de filtros: una fila sin caja */}
+        <section
+          aria-label="Filtros"
+          className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
+          data-entrada
         >
-          Nuevo Cliente
-        </Button>
-      </div>
+          <div className="relative w-full lg:max-w-[22rem]">
+            <Input
+              icono={MagnifyingGlassIcon}
+              aria-label="Buscar clientes"
+              placeholder="Buscar por razón social, nombre o RIF/cédula…"
+              value={busqueda}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBusqueda(e.target.value)}
+              className="[&_input]:pr-9"
+            />
+            {busqueda && (
+              <IconButton
+                icono={XIcon}
+                aria-label="Borrar búsqueda"
+                tamano="sm"
+                tooltip={false}
+                onClick={() => setBusqueda('')}
+                className="absolute right-0.5 top-1/2 -translate-y-1/2"
+              />
+            )}
+          </div>
 
-      {/* Barra de Filtros */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-card/30 p-4">
-        <div className="relative min-w-[240px] flex-1 max-w-md">
-          <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <input
-            type="text"
-            placeholder="Buscar por razón social, nombre o RIF/cédula..."
-            value={busqueda}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBusqueda(e.target.value)}
-            className="h-9 w-full rounded-lg border border-border bg-background pl-9 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-          {busqueda && (
-            <button
-              type="button"
-              onClick={() => setBusqueda('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <XIcon className="h-3.5 w-3.5" />
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              aria-label="Tipo de cliente"
+              valor={filtroTipo}
+              onCambio={setFiltroTipo}
+              opciones={[
+                { valor: 'todos', etiqueta: 'Todos los tipos' },
+                { valor: 'empresa', etiqueta: 'Empresas' },
+                { valor: 'persona', etiqueta: 'Personas naturales' },
+              ]}
+              className="w-auto min-w-44 flex-1 sm:flex-none"
+            />
+
+            <SegmentedControl
+              aria-label="Estado del cliente"
+              valor={filtroEstado}
+              onCambio={setFiltroEstado}
+              opciones={[
+                { valor: 'todos', etiqueta: 'Todos' },
+                { valor: 'activo', etiqueta: 'Activos' },
+                { valor: 'bloqueado', etiqueta: 'Bloqueados' },
+              ]}
+            />
+          </div>
+        </section>
+
+        <section aria-label="Listado de clientes" className="space-y-4" data-entrada>
+          {Boolean(errorAccion) && (
+            <ErrorState error={errorAccion} compacto onCerrar={() => setErrorAccion(null)} />
           )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <select
-            value={filtroTipo}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFiltroTipo(e.target.value)}
-            className="h-9 rounded-lg border border-border bg-background px-3 text-xs text-foreground focus:border-primary focus:outline-none"
-          >
-            <option value="todos">Todos los tipos</option>
-            <option value="empresa">Empresas</option>
-            <option value="persona">Personas naturales</option>
-          </select>
-
-          <select
-            value={filtroEstado}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFiltroEstado(e.target.value)}
-            className="h-9 rounded-lg border border-border bg-background px-3 text-xs text-foreground focus:border-primary focus:outline-none"
-          >
-            <option value="todos">Todos los estados</option>
-            <option value="activo">Activos</option>
-            <option value="bloqueado">Bloqueados</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Tabla de Clientes */}
-      <div className="flex-1 p-6 space-y-4">
-        {Boolean(errorAccion) && (
-          <ErrorState error={errorAccion} compacto onCerrar={() => setErrorAccion(null)} />
-        )}
-        {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-14 w-full rounded-xl" />
-            ))}
-          </div>
-        ) : error ? (
-          <ErrorState error={error} onReintentar={() => void refetch()} />
-        ) : clientesFiltrados.length === 0 ? (
-          <EmptyState
-            icono={UsersIcon}
-            titulo="No se encontraron clientes"
-            descripcion="Intente con otro término de búsqueda o registre un nuevo cliente corporativo."
-          />
-        ) : (
-          <div className="overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur-md shadow-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="border-b border-border bg-muted/30 font-bold uppercase tracking-wider text-muted-foreground">
-                  <tr>
-                    <th className="px-4 py-3">Cliente / Razón Social</th>
-                    <th className="px-4 py-3">Tipo</th>
-                    <th className="px-4 py-3">Documento / RIF</th>
-                    <th className="px-4 py-3">Contacto</th>
-                    <th className="px-4 py-3">Estado</th>
-                    <th className="px-4 py-3 text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/40">
-                  {clientesFiltrados.map((cliente) => (
-                    <tr
-                      key={cliente.id}
-                      onClick={() => navigate(`/clientes/${cliente.id}`)}
-                      className="cursor-pointer hover:bg-muted/20 transition-colors"
-                    >
-                      <td className="px-4 py-3">
-                        <div className="font-bold text-foreground flex items-center gap-2">
-                          {cliente.tipo === 'empresa' ? (
-                            <BuildingsIcon className="h-4 w-4 text-primary shrink-0" />
-                          ) : (
-                            <UserIcon className="h-4 w-4 text-sky-400 shrink-0" />
-                          )}
-                          <span>{cliente.nombre}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 capitalize text-muted-foreground">
-                        {cliente.tipo}
-                      </td>
-                      <td className="px-4 py-3 font-mono font-semibold text-foreground">
-                        {cliente.documento}
-                      </td>
-                      <td className="px-4 py-3 font-mono text-muted-foreground">
-                        <div>{cliente.telefono}</div>
-                        <div className="text-[11px] text-muted-foreground/80">{cliente.email}</div>
-                      </td>
-                      <td className="px-4 py-3">
-                        {cliente.estado === 'activo' ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] font-bold text-emerald-400">
-                            <CheckCircleIcon className="h-3 w-3" /> Activo
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 border border-destructive/30 px-2.5 py-0.5 text-[10px] font-bold text-destructive">
-                            <LockKeyIcon className="h-3 w-3" /> Bloqueado
-                          </span>
-                        )}
-                      </td>
-                      <td
-                        className="px-4 py-3 text-right"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              className="rounded p-1 hover:bg-muted text-muted-foreground hover:text-foreground"
-                            >
-                              <DotsThreeVerticalIcon className="h-4 w-4" />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => navigate(`/clientes/${cliente.id}`)}>
-                              Ver ficha completa
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => alternarEstadoCliente(cliente)}
-                            >
-                              {cliente.estado === 'activo' ? 'Bloquear cliente' : 'Desbloquear cliente'}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {isLoading ? (
+            <div className="tarjeta overflow-hidden">
+              <div className="h-10" />
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex h-[53px] items-center gap-6 border-t border-line px-4">
+                  <Skeleton className="size-7 shrink-0 rounded-lg" />
+                  <Skeleton className="-ml-3 h-4 w-48" />
+                  <Skeleton className="hidden h-4 w-24 sm:block" />
+                  <Skeleton className="hidden h-4 w-32 md:block" />
+                  <Skeleton className="ml-auto h-[22px] w-20 rounded-full" />
+                </div>
+              ))}
             </div>
-          </div>
-        )}
+          ) : error ? (
+            <ErrorState error={error} onReintentar={() => void refetch()} />
+          ) : clientesFiltrados.length === 0 ? (
+            <EmptyState
+              icono={UsersIcon}
+              titulo="No se encontraron clientes"
+              descripcion="Intente con otro término de búsqueda o registre un nuevo cliente."
+            />
+          ) : (
+            <div className="tarjeta overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th className="th-tabla">Cliente</th>
+                      <th className="th-tabla">Tipo</th>
+                      <th className="th-tabla">Documento</th>
+                      <th className="th-tabla">Contacto</th>
+                      <th className="th-tabla">Estado</th>
+                      <th className="th-tabla">
+                        <span className="sr-only">Acciones</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {clientesFiltrados.map((cliente) => (
+                      <tr
+                        key={cliente.id}
+                        onClick={() => navigate(`/clientes/${cliente.id}`)}
+                        className="fila-tabla h-12 cursor-pointer"
+                      >
+                        <td className="px-4 py-1.5">
+                          <div className="flex items-center gap-3">
+                            <Avatar nombre={cliente.nombre} tamano="sm" />
+                            <Link
+                              to={`/clientes/${cliente.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="whitespace-nowrap font-medium text-ink"
+                            >
+                              {cliente.nombre}
+                            </Link>
+                          </div>
+                        </td>
+                        <td className="px-4 capitalize text-ink-2">{cliente.tipo}</td>
+                        <td className="whitespace-nowrap px-4 font-mono text-[13px] text-ink">{cliente.documento}</td>
+                        <td className="whitespace-nowrap px-4 py-1.5">
+                          <div className="tabular text-ink-2">{cliente.telefono}</div>
+                          <div className="text-[13px] text-ink-3">{cliente.email}</div>
+                        </td>
+                        <td className="px-4">
+                          {cliente.estado === 'activo' ? (
+                            <Badge tono="ok" icono={CheckCircleIcon}>
+                              Activo
+                            </Badge>
+                          ) : (
+                            <Badge tono="danger" icono={LockKeyIcon}>
+                              Bloqueado
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="px-2 text-right" onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <IconButton
+                                icono={DotsThreeVerticalIcon}
+                                aria-label={`Acciones de ${cliente.nombre}`}
+                                tamano="sm"
+                                tooltip={false}
+                              />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => navigate(`/clientes/${cliente.id}`)}>
+                                Ver ficha completa
+                              </DropdownMenuItem>
+                              {puedeEditar && (
+                                <DropdownMenuItem onClick={() => alternarEstadoCliente(cliente)}>
+                                  {cliente.estado === 'activo' ? 'Bloquear cliente' : 'Desbloquear cliente'}
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </section>
       </div>
 
       {/* Modal Nuevo Cliente */}
       <Dialog open={modalNuevo} onOpenChange={(v: boolean) => !v && setModalNuevo(false)}>
         <DialogContent
-          titulo={
-            <div className="flex items-center gap-2 text-primary font-bold">
-              <PlusIcon className="h-5 w-5" />
-              <span>Registrar Nuevo Cliente</span>
-            </div>
-          }
+          titulo="Nuevo cliente"
           descripcion="Añada un cliente corporativo o persona natural para asignarle reservas de flota."
           tamano="md"
           pie={
-            <div className="flex items-center justify-end gap-2 w-full">
-              <Button variante="fantasma" onClick={() => setModalNuevo(false)} disabled={guardandoNuevo}>
+            <>
+              <Button onClick={() => setModalNuevo(false)} disabled={guardandoNuevo}>
                 Cancelar
               </Button>
+              {/* Envía el formulario por su id: así Enter en un campo hace lo mismo que el botón */}
               <Button
                 variante="primario"
-                onClick={handleCrear}
+                type="submit"
+                form={idFormulario}
                 cargando={guardandoNuevo ? 'Guardando…' : false}
               >
-                Crear Cliente
+                Crear cliente
               </Button>
-            </div>
+            </>
           }
         >
-          <form onSubmit={handleCrear} className="space-y-3.5 py-2">
+          <form id={idFormulario} noValidate onSubmit={handleCrear} className="space-y-4 pt-1">
             {Boolean(errorModal) && (
               <ErrorState error={errorModal} compacto onCerrar={() => setErrorModal(null)} />
             )}
@@ -312,13 +339,13 @@ export default function ClientesPage() {
                 valor={tipoNuevo}
                 onCambio={(v: string) => setTipoNuevo(v as TipoCliente)}
                 opciones={[
-                  { valor: 'empresa', etiqueta: 'Empresa / Constructora' },
-                  { valor: 'persona', etiqueta: 'Persona Natural' },
+                  { valor: 'empresa', etiqueta: 'Empresa o constructora' },
+                  { valor: 'persona', etiqueta: 'Persona natural' },
                 ]}
               />
             </Field>
 
-            <Field etiqueta="Nombre o Razón Social" requerido>
+            <Field etiqueta="Nombre o razón social" requerido>
               <Input
                 placeholder="Ej. Constructora Andina C.A."
                 value={nombreNuevo}
@@ -327,23 +354,27 @@ export default function ClientesPage() {
               />
             </Field>
 
-            <Field etiqueta="RIF o Cédula de Identidad" requerido ayuda="Formato J-12345678-9 o V-12345678">
-              <Input
-                placeholder="J-12345678-9"
-                value={documentoNuevo}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDocumentoNuevo(e.target.value)}
-                required
-              />
-            </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field etiqueta="RIF o cédula de identidad" requerido ayuda="Formato J-12345678-9 o V-12345678">
+                <Input
+                  placeholder="J-12345678-9"
+                  value={documentoNuevo}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDocumentoNuevo(e.target.value)}
+                  required
+                  className="font-mono"
+                />
+              </Field>
 
-            <Field etiqueta="Teléfono de contacto" requerido>
-              <Input
-                placeholder="+58 412 1234567"
-                value={telefonoNuevo}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTelefonoNuevo(e.target.value)}
-                required
-              />
-            </Field>
+              <Field etiqueta="Teléfono de contacto" requerido>
+                <Input
+                  type="tel"
+                  placeholder="+58 412 1234567"
+                  value={telefonoNuevo}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTelefonoNuevo(e.target.value)}
+                  required
+                />
+              </Field>
+            </div>
 
             <Field etiqueta="Correo electrónico" requerido>
               <Input

@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router';
 import {
   ArrowRightIcon,
-  CheckCircleIcon,
   DotsThreeVerticalIcon,
   GasPumpIcon,
   GaugeIcon,
+  MapPinIcon,
   PlusIcon,
   SquaresFourIcon,
   TruckIcon,
@@ -14,291 +14,308 @@ import {
 } from '@phosphor-icons/react';
 import type { Activo } from '@/api/contrato';
 import { useCatalogos } from '@/api/hooks';
+import { useAppDispatch, usePuede } from '@/app/hooks';
+import { useEntrada } from '@/shared/hooks/useEntrada';
+import { formatearCapacidad, formatearLectura, formatearNumero, pluralizar } from '@/shared/lib/formato';
 import { hashTexto, srcCategoria } from '@/shared/lib/imagenes';
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyState, ErrorState, Skeleton } from '@/shared/ui';
+import {
+  Badge,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  EmptyState,
+  ErrorState,
+  IconButton,
+  Skeleton,
+} from '@/shared/ui';
+import { EncabezadoPagina } from '@/shared/ui/EncabezadoPagina';
 import { EstadoActivoBadge } from '@/shared/ui/dominio';
+import { contarFiltrosActivos, filtrosLimpiados } from '@/features/filtros/filtrosSlice';
+import { useSincronizarFiltrosUrl } from '@/features/filtros/url';
 import { useInventario } from '@/features/filtros/useInventario';
 import { BarraFiltrosInventario } from '../components/BarraFiltrosInventario';
 import { DialogoNuevoActivo } from '../components/DialogoNuevoActivo';
 import { DialogoCambiarEstadoActivo } from '../components/DialogoCambiarEstadoActivo';
+import { EtiquetaMotor } from '../components/EtiquetaMotor';
+
+const REJILLA = 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
 export default function InventarioPage() {
+  useSincronizarFiltrosUrl();
   const navigate = useNavigate();
-  const { filas, total, conteos, cargando, error, reintentar } = useInventario();
+  const dispatch = useAppDispatch();
+  const ref = useEntrada<HTMLDivElement>();
+  const puedeCrearActivo = usePuede('crear', 'activo');
+  const puedeCambiarEstado = usePuede('cambiar_estado', 'activo');
+  const { filas, total, conteos, filtros, cargando, error, reintentar } = useInventario();
   const { categorias, sedes } = useCatalogos();
 
   const [modoVista, setModoVista] = useState<'tarjetas' | 'tabla'>('tarjetas');
   const [modalNuevo, setModalNuevo] = useState(false);
   const [activoSeleccionadoParaEstado, setActivoSeleccionadoParaEstado] = useState<Activo | null>(null);
 
-  // Estadísticas rápidas para la cabecera
-  const stats = useMemo(() => {
-    const operativos = conteos.estados['disponible'] ?? 0;
-    const enAlquiler = conteos.estados['en_alquiler'] ?? 0;
-    const enTaller = conteos.estados['en_mantenimiento'] ?? 0;
-    return { operativos, enAlquiler, enTaller };
-  }, [conteos]);
+  // El conteo de registros va en la línea de descripción, no en una píldora junto al título
+  const visibles =
+    filas.length === total
+      ? pluralizar(total, 'activo')
+      : `${formatearNumero(filas.length)} de ${pluralizar(total, 'activo')}`;
+  const descripcion =
+    cargando || error
+      ? 'Unidades, fichas técnicas y estados operativos.'
+      : `${visibles}, ${conteos.estados['disponible'] ?? 0} disponibles, ${conteos.estados['en_alquiler'] ?? 0} en alquiler, ${conteos.estados['en_mantenimiento'] ?? 0} en taller.`;
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-3.5rem)] bg-background">
-      {/* Cabecera de Página */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border bg-card/60 px-6 py-4 backdrop-blur-md">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold tracking-tight text-foreground">Inventario de Flota</h1>
-            <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-mono font-bold text-primary">
-              {filas.length} / {total} activos
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Gestión de unidades, fichas técnicas, medidores de desgaste y estados operativos.
-          </p>
-        </div>
-
-        {/* Métricas y Acción Principal */}
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-3 border-r border-border/60 pr-4 text-xs font-mono">
-            <div className="flex items-center gap-1.5 text-emerald-400">
-              <CheckCircleIcon className="h-4 w-4" />
-              <span>{stats.operativos} Disponibles</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-blue-400">
-              <TruckIcon className="h-4 w-4" />
-              <span>{stats.enAlquiler} En Alquiler</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-amber-400">
-              <WrenchIcon className="h-4 w-4" />
-              <span>{stats.enTaller} En Taller</span>
-            </div>
-          </div>
-
-          <Button
-            variante="primario"
-            icono={PlusIcon}
-            onClick={() => setModalNuevo(true)}
-            className="text-xs font-bold"
-          >
-            Nuevo Activo
-          </Button>
-        </div>
-      </div>
-
-      {/* Barra de Filtros Multicriterio */}
-      <BarraFiltrosInventario
-        categorias={categorias}
-        sedes={sedes}
-        conteos={conteos}
-        modoVista={modoVista}
-        onCambioModoVista={setModoVista}
+    <div ref={ref} className="mx-auto w-full max-w-[1400px]">
+      <EncabezadoPagina
+        titulo="Inventario"
+        descripcion={descripcion}
+        acciones={
+          puedeCrearActivo && (
+            <Button variante="primario" icono={PlusIcon} onClick={() => setModalNuevo(true)}>
+              Nuevo activo
+            </Button>
+          )
+        }
       />
 
-      {/* Contenido Principal */}
-      <div className="flex-1 p-6">
-        {cargando ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="rounded-xl border border-border bg-card p-4 space-y-3">
-                <Skeleton className="h-36 w-full rounded-lg" />
-                <Skeleton className="h-5 w-2/3" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-8 w-full" />
-              </div>
-            ))}
-          </div>
-        ) : error ? (
-          <ErrorState onReintentar={reintentar} />
-        ) : filas.length === 0 ? (
-          <EmptyState
-            icono={SquaresFourIcon}
-            titulo="No se encontraron activos"
-            descripcion="Pruebe ajustando los términos de búsqueda o eliminando los filtros seleccionados."
+      <div className="space-y-6">
+        <section aria-label="Filtros" data-entrada>
+          <BarraFiltrosInventario
+            categorias={categorias}
+            sedes={sedes}
+            conteos={conteos}
+            modoVista={modoVista}
+            onCambioModoVista={setModoVista}
           />
-        ) : modoVista === 'tarjetas' ? (
-          /* Vista en Cuadrícula de Tarjetas */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filas.map(({ activo, categoria, sede, estado, vencimiento }) => {
-              const imgUrl = srcCategoria(categoria.slug, hashTexto(activo.id), 'lg');
+        </section>
 
-              return (
-                <div
-                  key={activo.id}
-                  className="group relative flex flex-col justify-between rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs p-4 transition-all duration-200 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
-                >
-                  <div>
-                    {/* Imagen y Badges superiores */}
-                    <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border/40 bg-muted/30 mb-3">
+        <section aria-label="Activos" data-entrada>
+          {cargando ? (
+            modoVista === 'tarjetas' ? (
+              <div className={REJILLA}>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="tarjeta overflow-hidden">
+                    <Skeleton className="aspect-[16/10] w-full rounded-none" />
+                    <div className="space-y-2.5 p-4">
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-[22px] w-24 rounded-full" />
+                      </div>
+                      <Skeleton className="h-5 w-2/3" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="tarjeta overflow-hidden">
+                <div className="h-10" />
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="flex h-[53px] items-center gap-6 border-t border-line px-4">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="hidden h-4 w-36 sm:block" />
+                    <Skeleton className="ml-auto h-[22px] w-24 rounded-full" />
+                  </div>
+                ))}
+              </div>
+            )
+          ) : error ? (
+            <ErrorState error={error} onReintentar={reintentar} />
+          ) : filas.length === 0 ? (
+            <EmptyState
+              icono={SquaresFourIcon}
+              titulo="No se encontraron activos"
+              descripcion="Pruebe ajustando los términos de búsqueda o eliminando los filtros seleccionados."
+              accion={
+                contarFiltrosActivos(filtros) > 0 ? (
+                  <Button onClick={() => dispatch(filtrosLimpiados())}>Restablecer filtros</Button>
+                ) : undefined
+              }
+            />
+          ) : modoVista === 'tarjetas' ? (
+            <ul className={REJILLA}>
+              {filas.map(({ activo, categoria, sede, estado, vencimiento }) => {
+                const imgUrl = srcCategoria(categoria.slug, hashTexto(activo.id), 'lg');
+                const textoVencimiento = vencimiento?.vencido
+                  ? vencimiento.faltanDias !== undefined && vencimiento.faltanDias < 0
+                    ? `Vencido hace ${Math.abs(vencimiento.faltanDias)} días`
+                    : 'Service vencido'
+                  : vencimiento?.faltanDias !== undefined
+                    ? `Vence en ${vencimiento.faltanDias} días`
+                    : 'Service próximo';
+
+                return (
+                  <li
+                    key={activo.id}
+                    className="tarjeta flex flex-col overflow-hidden transition-colors duration-150 ease-salida hover:border-line-strong"
+                  >
+                    <div className="aspect-[16/10] w-full bg-panel-2">
                       {imgUrl ? (
                         <img
                           src={imgUrl}
-                          alt={activo.codigo}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          alt={`${categoria.nombre} ${activo.marca} ${activo.modelo}`}
+                          className="h-full w-full object-cover"
                           loading="lazy"
+                          decoding="async"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center">
-                          <TruckIcon className="h-12 w-12 text-muted-foreground/40" />
+                        <div className="flex h-full w-full items-center justify-center text-ink-3">
+                          <TruckIcon size={40} weight="duotone" aria-hidden />
                         </div>
                       )}
+                    </div>
 
-                      <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                    <div className="flex flex-1 flex-col p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-[13px] text-ink-2">{activo.codigo}</span>
                         <EstadoActivoBadge estado={estado} />
                       </div>
 
-                      <div className="absolute top-2 right-2">
-                        <span className="rounded-md bg-black/60 px-2 py-0.5 text-[10px] font-mono font-bold text-white backdrop-blur-xs">
+                      <h3 className="mt-2.5 truncate text-[15px] font-semibold text-ink">
+                        {activo.marca} {activo.modelo}
+                      </h3>
+                      <p className="truncate text-[13px] text-ink-3">
+                        {categoria.nombre}, {activo.anio}
+                      </p>
+
+                      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-ink-2 [&_svg]:text-ink-3">
+                        <span className="inline-flex items-center gap-1.5">
+                          <GaugeIcon size={16} aria-hidden />
+                          {formatearCapacidad(activo.capacidad, categoria.unidadCapacidad)}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <GasPumpIcon size={16} aria-hidden />
+                          <EtiquetaMotor tipo={activo.motor} />
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <MapPinIcon size={16} aria-hidden />
                           {sede.ciudad}
                         </span>
                       </div>
+
+                      {/* El color solo avisa: vencido o dentro de la antelación. Lo demás es un dato más. */}
+                      {vencimiento &&
+                        (vencimiento.vencido || vencimiento.enAviso ? (
+                          <Badge tono={vencimiento.vencido ? 'danger' : 'warn'} icono={WarningIcon} className="mt-3 self-start">
+                            {textoVencimiento}
+                          </Badge>
+                        ) : (
+                          <p className="mt-3 inline-flex items-center gap-1.5 text-[13px] text-ink-3">
+                            <WrenchIcon size={16} aria-hidden />
+                            {textoVencimiento}
+                          </p>
+                        ))}
+
+                      <div className="mt-auto flex items-center justify-between pt-3">
+                        {puedeCambiarEstado ? (
+                          <Button
+                            variante="fantasma"
+                            tamano="sm"
+                            onClick={() => setActivoSeleccionadoParaEstado(activo)}
+                            className="-ml-3"
+                          >
+                            Estado
+                          </Button>
+                        ) : (
+                          <span />
+                        )}
+                        <Button asChild variante="fantasma" tamano="sm" className="-mr-3 text-ink">
+                          <Link to={`/inventario/${activo.id}`}>
+                            Ver ficha
+                            <ArrowRightIcon size={16} aria-hidden />
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
-
-                    {/* Títulos y Código */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-sm font-black text-foreground group-hover:text-primary transition-colors">
-                          {activo.codigo}
-                        </span>
-                        <span className="text-[11px] font-mono text-muted-foreground">
-                          {activo.anio}
-                        </span>
-                      </div>
-
-                      <h3 className="text-sm font-bold text-foreground truncate">
-                        {activo.marca} {activo.modelo}
-                      </h3>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {categoria.nombre}
-                      </p>
-                    </div>
-
-                    {/* Ficha rápida de especificaciones */}
-                    <div className="mt-3 grid grid-cols-2 gap-2 border-t border-border/40 pt-2.5 text-[11px] font-mono text-muted-foreground">
-                      <div className="flex items-center gap-1.5">
-                        <GaugeIcon className="h-3.5 w-3.5 text-primary" />
-                        <span>
-                          {activo.capacidad} {categoria.unidadCapacidad}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <GasPumpIcon className="h-3.5 w-3.5 text-primary capitalize" />
-                        <span>{activo.motor}</span>
-                      </div>
-                    </div>
-
-                    {/* Alerta de mantenimiento próximo si aplica */}
-                    {vencimiento && (
-                      <div className="mt-2.5 flex items-center gap-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 px-2 py-1 text-[10px] text-amber-400">
-                        <WarningIcon className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">
-                          {vencimiento.faltanDias !== undefined ? `Vence en ${vencimiento.faltanDias} días` : 'Service próximo'}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Acciones de Tarjeta */}
-                  <div className="mt-4 flex items-center justify-between gap-2 border-t border-border/50 pt-3">
-                    <Button
-                      variante="fantasma"
-                      tamano="sm"
-                      onClick={() => setActivoSeleccionadoParaEstado(activo)}
-                      className="text-[11px] h-7 px-2 text-muted-foreground hover:text-foreground"
-                    >
-                      Estado
-                    </Button>
-
-                    <Button
-                      variante="secundario"
-                      tamano="sm"
-                      iconoFin={ArrowRightIcon}
-                      onClick={() => navigate(`/inventario/${activo.id}`)}
-                      className="text-[11px] h-7 px-2.5 font-bold"
-                    >
-                      Ver Ficha
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          /* Vista en Tabla de Datos */
-          <div className="overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur-md shadow-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="border-b border-border bg-muted/30 font-bold uppercase tracking-wider text-muted-foreground">
-                  <tr>
-                    <th className="px-4 py-3">Unidad</th>
-                    <th className="px-4 py-3">Categoría</th>
-                    <th className="px-4 py-3">Sede Base</th>
-                    <th className="px-4 py-3">Capacidad</th>
-                    <th className="px-4 py-3">Lectura</th>
-                    <th className="px-4 py-3">Estado</th>
-                    <th className="px-4 py-3 text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/40">
-                  {filas.map(({ activo, categoria, sede, estado }) => (
-                    <tr
-                      key={activo.id}
-                      onClick={() => navigate(`/inventario/${activo.id}`)}
-                      className="cursor-pointer hover:bg-muted/20 transition-colors"
-                    >
-                      <td className="px-4 py-2.5 font-mono">
-                        <div className="font-black text-foreground">{activo.codigo}</div>
-                        <div className="text-[11px] text-muted-foreground font-sans">
-                          {activo.marca} {activo.modelo} ({activo.anio})
-                        </div>
-                      </td>
-                      <td className="px-4 py-2.5 text-foreground font-medium">
-                        {categoria.nombre}
-                      </td>
-                      <td className="px-4 py-2.5 text-muted-foreground">
-                        {sede.nombre} ({sede.ciudad})
-                      </td>
-                      <td className="px-4 py-2.5 font-mono text-foreground">
-                        {activo.capacidad} {categoria.unidadCapacidad}
-                      </td>
-                      <td className="px-4 py-2.5 font-mono text-muted-foreground">
-                        {activo.lecturaActual} {categoria.medidor}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <EstadoActivoBadge estado={estado} />
-                      </td>
-                      <td
-                        className="px-4 py-2.5 text-right"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              className="rounded p-1 hover:bg-muted text-muted-foreground hover:text-foreground"
-                            >
-                              <DotsThreeVerticalIcon className="h-4 w-4" />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => navigate(`/inventario/${activo.id}`)}>
-                              Ver ficha completa
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => setActivoSeleccionadoParaEstado(activo)}
-                            >
-                              Cambiar estado operativo
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="tarjeta overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th className="th-tabla">Unidad</th>
+                      <th className="th-tabla">Categoría</th>
+                      <th className="th-tabla">Sede base</th>
+                      <th className="th-tabla">Capacidad</th>
+                      <th className="th-tabla">Lectura</th>
+                      <th className="th-tabla">Estado</th>
+                      <th className="th-tabla">
+                        <span className="sr-only">Acciones</span>
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filas.map(({ activo, categoria, sede, estado }) => (
+                      <tr
+                        key={activo.id}
+                        onClick={() => navigate(`/inventario/${activo.id}`)}
+                        className="fila-tabla h-12 cursor-pointer"
+                      >
+                        <td className="px-4 py-1.5">
+                          <Link
+                            to={`/inventario/${activo.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="font-mono text-[13px] font-medium text-ink"
+                          >
+                            {activo.codigo}
+                          </Link>
+                          <div className="whitespace-nowrap text-[13px] text-ink-3">
+                            {activo.marca} {activo.modelo} ({activo.anio})
+                          </div>
+                        </td>
+                        <td className="whitespace-nowrap px-4 text-ink">{categoria.nombre}</td>
+                        <td className="whitespace-nowrap px-4 text-ink-2">
+                          {sede.nombre} ({sede.ciudad})
+                        </td>
+                        <td className="tabular whitespace-nowrap px-4 text-ink">
+                          {formatearCapacidad(activo.capacidad, categoria.unidadCapacidad)}
+                        </td>
+                        <td className="whitespace-nowrap px-4 font-mono text-[13px] text-ink-2">
+                          {formatearLectura(activo.lecturaActual, categoria.medidor)}
+                        </td>
+                        <td className="px-4">
+                          <EstadoActivoBadge estado={estado} />
+                        </td>
+                        <td className="px-2 text-right" onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <IconButton
+                                icono={DotsThreeVerticalIcon}
+                                aria-label={`Acciones de ${activo.codigo}`}
+                                tamano="sm"
+                                tooltip={false}
+                              />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => navigate(`/inventario/${activo.id}`)}>
+                                Ver ficha completa
+                              </DropdownMenuItem>
+                              {puedeCambiarEstado && (
+                                <DropdownMenuItem onClick={() => setActivoSeleccionadoParaEstado(activo)}>
+                                  Cambiar estado operativo
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </section>
       </div>
 
-      {/* Modal Nuevo Activo */}
       <DialogoNuevoActivo
         abierto={modalNuevo}
         onCerrar={() => setModalNuevo(false)}
@@ -306,7 +323,6 @@ export default function InventarioPage() {
         sedes={sedes}
       />
 
-      {/* Modal Cambio de Estado Operativo */}
       <DialogoCambiarEstadoActivo
         activo={activoSeleccionadoParaEstado}
         abierto={!!activoSeleccionadoParaEstado}
