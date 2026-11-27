@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { realpathSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -9,6 +10,9 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  // node_modules puede ser un enlace a otra carpeta: sin permitir su ruta real, Vite responde 403 a las
+  // fuentes en desarrollo y la app cae a la tipografía del sistema.
+  server: { fs: { allow: ['.', realpathSync(fileURLToPath(new URL('./node_modules', import.meta.url)))] } },
   build: {
     chunkSizeWarningLimit: 900,
   },

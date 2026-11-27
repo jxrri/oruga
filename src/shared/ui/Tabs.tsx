@@ -32,7 +32,7 @@ export function TabsTrigger({
     >
       {children}
       {conteo !== undefined && (
-        <span className="tabular rounded-full bg-panel-2 px-1.5 font-mono text-[11px] text-ink-3 ring-1 ring-inset ring-line">
+        <span className="tabular rounded-full bg-panel-2 px-1.5 text-xs text-ink-3 ring-1 ring-inset ring-line">
           {conteo}
         </span>
       )}

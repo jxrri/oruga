@@ -13,7 +13,7 @@ const claseEnlace = (activo: boolean, colapsado: boolean) =>
   cn(
     'relative flex h-9 items-center gap-3 rounded-lg text-ink-2 transition-colors duration-150 ease-salida hover:bg-panel-2 hover:text-ink pointer-coarse:h-11',
     colapsado ? 'w-9 justify-center pointer-coarse:w-11' : 'px-2.5',
-    activo && 'bg-panel-2 text-ink',
+    activo && 'bg-accent font-medium text-accent-ink shadow-panel hover:bg-accent hover:text-accent-ink',
   );
 
 /** Navegación principal. `colapsado` solo aplica en escritorio; en el cajón móvil va expandida. */
@@ -42,14 +42,6 @@ export function BarraLateral({ colapsado = false, alNavegar }: { colapsado?: boo
               <NavLink to={m.ruta} onClick={alNavegar} className={({ isActive }) => claseEnlace(isActive, colapsado)}>
                 {({ isActive }) => (
                   <>
-                    <span
-                      aria-hidden
-                      className={cn(
-                        'absolute top-2 bottom-2 w-[3px] rounded-r-full bg-accent transition-opacity duration-150',
-                        colapsado ? '-left-2' : '-left-3',
-                        isActive ? 'opacity-100' : 'opacity-0',
-                      )}
-                    />
                     <m.icono size={18} weight={isActive ? 'bold' : 'regular'} aria-hidden />
                     <span className={colapsado ? 'sr-only' : 'truncate'}>{m.etiqueta}</span>
                   </>

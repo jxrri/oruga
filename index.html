@@ -1,24 +1,27 @@
 <!doctype html>
-<html lang="es" data-tema="oscuro">
+<html lang="es" data-tema="claro">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="Oruga: gestión y alquiler de flotas de vehículos y maquinaria pesada." />
-    <meta name="theme-color" content="#0C0D0F" />
+    <meta name="theme-color" content="#F2F4F8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Oruga</title>
     <script>
       // Fija el tema antes del primer pintado para evitar el destello de tema equivocado.
       (function () {
-        var t = 'sistema';
-        try { t = JSON.parse(localStorage.getItem('oruga.tema') || '"sistema"'); } catch (e) {}
+        var t = 'claro';
+        try { t = JSON.parse(localStorage.getItem('oruga.tema') || '"claro"'); } catch (e) {}
         var oscuro = t === 'oscuro' || (t === 'sistema' && matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.dataset.tema = oscuro ? 'oscuro' : 'claro';
       })();
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Se ve mientras baja el JavaScript; React lo reemplaza al montar. -->
+      <img src="/favicon.svg" alt="" width="48" height="48" style="position: fixed; inset: 0; margin: auto; border-radius: 16px" />
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

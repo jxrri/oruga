@@ -77,8 +77,8 @@ export default function CreditosPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <header className="space-y-1">
-        <h1 className="text-xl font-semibold tracking-tight text-ink">Créditos de imágenes</h1>
-        <p className="text-sm text-ink-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">Créditos de imágenes</h1>
+        <p className="text-sm text-ink-3">
           {imagenes.length} fotografías de Wikimedia Commons con licencia libre, optimizadas para la web sin cambiar
           su contenido. Gracias a sus autores.
         </p>

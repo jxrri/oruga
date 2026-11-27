@@ -40,27 +40,69 @@
   --color-res-finalizada: var(--res-finalizada);
   --color-res-cancelada: var(--res-cancelada);
 
-  --shadow-panel: 0 1px 0 0 var(--sombra-borde), 0 8px 24px -12px var(--sombra);
-  --shadow-flotante: 0 1px 0 0 var(--sombra-borde), 0 18px 48px -16px var(--sombra);
+  /*
+   * Alias de compatibilidad. Varias pantallas usan nombres de otro sistema (bg-card, text-muted-foreground,
+   * border-border, text-emerald-400...) que aquí no existían y no generaban CSS: bordes en negro, fondos
+   * transparentes. Se resuelven contra los tokens, así respetan ambos temas.
+   * ponytail: alias en lugar de reescribir unas 600 clases; migrar cada pantalla a los tokens al tocarla.
+   */
+  --color-background: var(--canvas);
+  --color-foreground: var(--ink);
+  --color-card: var(--panel);
+  --color-muted: var(--panel-2);
+  --color-muted-foreground: var(--ink-3);
+  --color-border: var(--line);
+  --color-primary: var(--accent-fg);
+  --color-destructive: var(--danger);
+  --color-emerald-400: var(--ok);
+  --color-emerald-500: var(--ok);
+  --color-emerald-600: var(--ok);
+  --color-amber-400: var(--warn);
+  --color-amber-500: var(--warn);
+  --color-sky-400: var(--info);
+  --color-sky-500: var(--info);
+  --color-sky-600: var(--info);
+  --color-blue-400: var(--info);
+  --color-blue-500: var(--info);
+  --color-purple-400: var(--serie-violeta);
+  --color-purple-500: var(--serie-violeta);
+
+  /* Series de gráficos: cuatro tonos fijos, siempre con etiqueta o leyenda al lado */
+  --color-serie-azul: var(--serie-azul);
+  --color-serie-verde: var(--serie-verde);
+  --color-serie-naranja: var(--serie-naranja);
+  --color-serie-violeta: var(--serie-violeta);
+
+  /* Esquinas más suaves en toda la app: controles 10 px, paneles 16 px */
+  --radius-lg: 0.625rem;
+  --radius-xl: 1rem;
+
+  /* Tarjetas: apenas perceptible, la jerarquía la da la línea. Solo lo flotante proyecta sombra de verdad. */
+  --shadow-panel: 0 1px 2px 0 var(--sombra-borde);
+  --shadow-flotante: 0 1px 2px 0 var(--sombra-borde), 0 20px 48px -20px var(--sombra);
 
   --ease-salida: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
   color-scheme: light;
-  --canvas: #f3f4f6;
+  --canvas: #f7f8fa;
   --panel: #ffffff;
-  --panel-2: #f8f9fa;
+  --panel-2: #f3f5f8;
   --raised: #ffffff;
-  --line: #e2e5e9;
-  --line-strong: #cdd2d8;
-  --ink: #111317;
-  --ink-2: #4a525c;
-  --ink-3: #69717b;
-  --accent: #ffc21a;
-  --accent-ink: #191300;
-  --accent-fg: #8a6200;
-  --accent-soft: rgb(255 194 26 / 0.18);
+  --line: #e8eaef;
+  --line-strong: #d0d5de;
+  --ink: #141821;
+  --ink-2: #4a5263;
+  --ink-3: #687083;
+  --accent: #2a66f5;
+  --accent-ink: #ffffff;
+  --accent-fg: #1d55e0;
+  --accent-soft: rgb(42 102 245 / 0.1);
+  --serie-azul: #2f80ff;
+  --serie-verde: #12b76a;
+  --serie-naranja: #ffa600;
+  --serie-violeta: #8b5cf6;
   --ok: #0b8a4c;
   --ok-soft: rgb(11 138 76 / 0.1);
   --warn: #c2570c;
@@ -75,8 +117,8 @@
   --res-en-curso: #e0a400;
   --res-finalizada: #5f8f76;
   --res-cancelada: #a3a9b1;
-  --sombra: rgb(17 19 23 / 0.16);
-  --sombra-borde: rgb(17 19 23 / 0.04);
+  --sombra: rgb(22 34 66 / 0.18);
+  --sombra-borde: rgb(22 34 66 / 0.05);
 }
 
 [data-tema='oscuro'] {
@@ -90,10 +132,14 @@
   --ink: #edeef0;
   --ink-2: #a6adb6;
   --ink-3: #7c848e;
-  --accent: #ffc21a;
-  --accent-ink: #191300;
-  --accent-fg: #ffc21a;
-  --accent-soft: rgb(255 194 26 / 0.12);
+  --accent: #5b9dff;
+  --accent-ink: #04102a;
+  --accent-fg: #7fb2ff;
+  --accent-soft: rgb(91 157 255 / 0.14);
+  --serie-azul: #5b9dff;
+  --serie-verde: #3dd68c;
+  --serie-naranja: #ffb224;
+  --serie-violeta: #a78bfa;
   --ok: #3dd68c;
   --ok-soft: rgb(61 214 140 / 0.13);
   --warn: #ff9442;
@@ -112,8 +158,40 @@
   --sombra-borde: rgb(255 255 255 / 0.03);
 }
 
+/* Recetas compartidas (docs/DISENO.md): una sola definición de tarjeta y de tabla para todas las pantallas. */
+@utility tarjeta {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--line);
+  background-color: var(--panel);
+}
+@utility th-tabla {
+  height: 2.5rem;
+  padding-inline: 1rem;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--ink-3);
+}
+@utility fila-tabla {
+  border-top: 1px solid var(--line);
+  transition: background-color 150ms var(--ease-salida);
+  &:hover {
+    background-color: var(--panel-2);
+  }
+}
+
 @layer base {
+  /* Tailwind 4 usa currentColor en un `border` sin color: aquí el borde por defecto es el token de línea. */
+  *,
+  ::before,
+  ::after,
+  ::file-selector-button {
+    border-color: var(--line);
+  }
   html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;

@@ -26,7 +26,7 @@ export interface EncabezadoPaginaProps {
  */
 export function EncabezadoPagina({ titulo, descripcion, acciones, migas, children, className }: EncabezadoPaginaProps) {
   return (
-    <header className={cn('mb-5 flex flex-col gap-3', className)}>
+    <header className={cn('mb-6 flex flex-col gap-3', className)}>
       {migas && migas.length > 0 && (
         <nav aria-label="Ruta de navegación" data-entrada>
           <ol className="flex flex-wrap items-center gap-1 text-[13px] text-ink-3">
@@ -55,8 +55,8 @@ export function EncabezadoPagina({ titulo, descripcion, acciones, migas, childre
       )}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0" data-entrada>
-          <h1 className="texto-balance text-xl font-semibold tracking-tight text-ink">{titulo}</h1>
-          {descripcion && <p className="texto-bonito mt-1 max-w-[70ch] text-ink-2">{descripcion}</p>}
+          <h1 className="texto-balance text-2xl font-semibold tracking-tight text-ink">{titulo}</h1>
+          {descripcion && <p className="texto-bonito mt-1.5 max-w-[70ch] text-ink-3">{descripcion}</p>}
         </div>
         {acciones && (
           <div className="flex shrink-0 flex-wrap items-center gap-2" data-entrada>

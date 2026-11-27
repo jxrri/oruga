@@ -30,7 +30,7 @@ export interface EstadoUI {
 const uiSlice = createSlice({
   name: 'ui',
   initialState: (): EstadoUI => ({
-    tema: leer<Tema>('oruga.tema', 'sistema'),
+    tema: leer<Tema>('oruga.tema', 'claro'),
     menuColapsado: leer('oruga.menuColapsado', false),
     mostrarBs: leer('oruga.mostrarBs', false),
     panelDevAbierto: false,

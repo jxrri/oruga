@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate, Outlet, useLocation, useNavigation } from 'react-router';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -22,6 +22,10 @@ export default function AppLayout() {
   const escritorio = useMediaQuery('(min-width: 1024px)');
   const [menuMovil, setMenuMovil] = useState(false);
   const principal = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 });
+  }, [pathname]);
 
   // Entrada corta del módulo al cambiar de ruta; con movimiento reducido no se anima nada.
   useGSAP(
@@ -76,7 +80,7 @@ export default function AppLayout() {
             className="fixed inset-x-0 top-0 z-60 h-0.5 origin-left animate-[progreso_2.4s_var(--ease-salida)_forwards] bg-accent"
           />
         )}
-        <main id="contenido" ref={principal} tabIndex={-1} className="flex-1 px-4 py-5 outline-none sm:px-6 lg:py-6">
+        <main id="contenido" ref={principal} tabIndex={-1} className="flex-1 px-4 py-6 outline-none sm:px-6 lg:px-8 lg:py-8">
           <Outlet />
         </main>
       </div>
