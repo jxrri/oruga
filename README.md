@@ -1,66 +1,200 @@
-# Oruga - Sistema de Gestión y Alquiler de Flotas y Maquinaria Pesada
+<div align="center">
 
-Frontend operativo (Fase 1) desarrollado con React 19, TypeScript estricto, Tailwind CSS v4, Redux Toolkit + RTK Query, GSAP, Three.js, Leaflet y MSW (Mock Service Worker).
+<img src="public/favicon.svg" width="76" height="76" alt="Logo de Oruga" />
 
-## Módulos implementados
+# Oruga
 
-1. **Tablero de Control (`/tablero`)**: Indicadores clave (KPIs) con animación GSAP, tasa de utilización por categoría, distribución de estado de flota, proyección de ingresos mensuales, alertas accionables (`RF-DSH-01`, `RF-DSH-02`) y operaciones del día.
-2. **Planificador Timeline (`/planificador`)**: Calendario horizontal interactivo con arrastre en tiempo real (`mover`, `redimensionar`, `reasignar`), ajuste a rejilla por escala (Día, Semana, Mes), detección instantánea de colisiones y tiempos de preparación (`RF-PLN-01` a `RF-PLN-10`).
-3. **Inventario de Activos (`/inventario`, `/inventario/:id`)**: Catálogo virtualizado en vista de tarjetas y tabla, filtro de disponibilidad por ventana temporal, ficha técnica de equipo, control de documentos y cambio de estado operativo con auditoría (`RF-INV-01` a `RF-INV-06`).
-4. **Reservas y Contratos (`/reservas`, `/reservas/nueva`, `/reservas/:id`)**: Cotizador con tarifa óptima combinada (mes, semana, día, hora), validación de conflictos en vivo, máquina de estados (`borrador`, `confirmada`, `en_curso`, `finalizada`, `cancelada`) y bitácora de cambios (`RF-RES-01` a `RF-RES-04`).
-5. **Inspecciones Técnicas (`/inspecciones`, `/inspecciones/nueva`, `/inspecciones/comparar/:reservaId`, `/admin/plantillas`)**: Formularios dinámicos generados por esquema JSON con reglas condicionales (`visibleSi`), cálculo automático de veredicto (`apto`, `apto_con_observaciones`, `no_apto`), comparativa lado a lado entre salida y devolución, y editor de plantillas en vivo (`RF-INS-01` a `RF-INS-05`).
-6. **Mantenimiento (`/mantenimiento`)**: Gestión de órdenes preventivas y correctivas, cálculo de vencimientos por lectura (km u horas) o días calendario, y actualización automática de umbrales al cerrar servicios (`RF-MNT-01` a `RF-MNT-04`).
-7. **Directorio de Clientes (`/clientes`, `/clientes/:id`)**: Registro con validación de RIF/cédula, bloqueo administrativo con restricción en confirmación de reservas e historial de facturación (`RF-CLI-01` a `RF-CLI-03`).
-8. **Ubicación y Telemetría (`/ubicacion`)**: Mapa interactivo con marcadores por estado visible, simulación de movimiento en tiempo real cada 4 s para activos en alquiler y alertas de geocerca alrededor de las obras (`RF-UBI-01` a `RF-UBI-03`).
+**Toda la flota en una sola línea de tiempo.**
 
-## Cuentas y acceso
+Gestión y alquiler de vehículos y maquinaria pesada: reservas, inspecciones, mantenimiento y telemetría<br />
+en Maracaibo, Caracas, Valencia y Cúcuta.
 
-La app pide correo y clave en `/login` y permite crear una cuenta en `/registro`. Como esta fase no tiene backend, las cuentas viven en una base de datos local del navegador:
+[![CI](https://github.com/jxrri/oruga/actions/workflows/ci.yml/badge.svg)](https://github.com/jxrri/oruga/actions/workflows/ci.yml)
+![React 19](https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-estricto-3178c6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646cff?logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38bdf8?logo=tailwindcss&logoColor=white)
+![Fase](https://img.shields.io/badge/fase-1_·_frontend-ffc21a)
 
-- **Dónde**: IndexedDB, base `keyval-store`, registro `oruga.cuentas` (`src/mocks/cuentas.ts`). Guarda las cuentas registradas, las credenciales y las sesiones abiertas.
-- **Claves**: nunca en texto claro. Se guarda una sal aleatoria por cuenta y el hash PBKDF2-SHA256 (600 000 iteraciones) calculado con Web Crypto.
-- **Sesión**: al entrar se emite un token aleatorio que la app envía como `Authorization: Bearer <token>`. Si el servidor simulado no lo reconoce responde 401 y la app vuelve al login.
-- **Cuentas de demostración**: las cinco cuentas de la semilla (una por rol) usan la clave `oruga2026`; la pantalla de login las lista y rellena el formulario con un toque.
-- **Borrar todo**: en las herramientas del navegador, Application > IndexedDB > `keyval-store` > eliminar. Las cuentas de demostración se vuelven a crear solas.
+[**Manual de usuario (PDF)**](docs/user-manual/oruga-user-manual.pdf) ·
+[Inicio rápido](#inicio-rápido) ·
+[Módulos](#módulos) ·
+[Roles](#roles-y-permisos) ·
+[Arquitectura](#arquitectura)
 
-Límite a tener presente: la base está en el equipo de quien usa la app, así que protege la clave (no se puede leer), pero no es una barrera de seguridad frente a alguien con acceso a ese navegador. Con un backend real (`VITE_API_URL`), el mismo formulario llama a `POST auth/login` y `POST auth/registro` sin cambios en las pantallas.
+<br />
 
-Usa `npm run dev` o un sitio con HTTPS: Web Crypto solo está disponible en `localhost` y en contextos seguros.
+<img src="docs/user-manual/screenshots/dashboard-dark.png" alt="Tablero de Oruga en tema oscuro" width="920" />
 
-## Requisitos previos
+</div>
 
-- Node.js 20+
-- npm 10+
+<br />
 
-## Comandos principales
+## Qué es Oruga
+
+Oruga reúne en un solo lugar el ciclo completo de un alquiler de equipos pesados: el registro de la flota y de los clientes, la reserva con su cotización, la inspección del equipo al salir y al volver del patio, el mantenimiento preventivo y correctivo, y el seguimiento de la ubicación de cada unidad.
+
+Esta es la **fase 1**: un frontend completo y navegable. La API se simula en el navegador con MSW y los datos se guardan en una base local (IndexedDB), así que se puede usar sin servidor.
+
+> [!TIP]
+> El [**manual de usuario**](docs/user-manual/oruga-user-manual.pdf) recorre todas las pantallas en 57 páginas con capturas reales, pasos guiados, reglas de negocio y preguntas frecuentes.
+
+## Módulos
+
+| Módulo            | Para qué sirve                                                                                                                         |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Tablero**       | Indicadores del negocio, analítica de la flota, alertas que piden una decisión y operaciones del día.                                  |
+| **Planificador**  | Calendario de toda la flota: crear, mover, redimensionar y reasignar reservas arrastrándolas, con detección de conflictos al instante. |
+| **Reservas**      | Contratos de alquiler con tarifa óptima (mes, semana, día y hora), validación de disponibilidad, estados e historial de cambios.       |
+| **Inventario**    | Catálogo en tarjetas o tabla, disponibilidad por rango de fechas, ficha técnica, documentos y estado operativo con bitácora.           |
+| **Inspecciones**  | Formularios generados desde plantillas, campos condicionales, veredicto automático y comparación entre salida y devolución.            |
+| **Mantenimiento** | Órdenes de taller preventivas y correctivas, y planes que vencen por horas, kilómetros o días.                                         |
+| **Clientes**      | Directorio con validación de RIF y cédula, bloqueo administrativo e historial de contratos.                                            |
+| **Ubicación**     | Mapa en vivo con la posición de cada activo cada 4 segundos y alertas de geocerca alrededor de las obras.                              |
+| **Plantillas**    | Editor de los formularios de inspección con vista previa interactiva y versiones.                                                      |
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/user-manual/screenshots/planner-month.png" alt="Planificador en escala mensual" /><br /><sub><b>Planificador.</b> Toda la flota en una línea de tiempo, con panel de conflictos.</sub></td>
+    <td width="50%"><img src="docs/user-manual/screenshots/asset-detail.png" alt="Ficha de un activo" /><br /><sub><b>Inventario.</b> Ficha técnica, pólizas y estado operativo de cada unidad.</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/user-manual/screenshots/inspection-compare.png" alt="Comparación de inspecciones" /><br /><sub><b>Inspecciones.</b> Salida frente a devolución, con los daños nuevos marcados.</sub></td>
+    <td><img src="docs/user-manual/screenshots/map-asset.png" alt="Mapa de flota" /><br /><sub><b>Ubicación.</b> Telemetría en vivo y alerta cuando un equipo sale de su obra.</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/user-manual/screenshots/reservation-detail.png" alt="Ficha de una reserva" /><br /><sub><b>Reservas.</b> Estado, inspecciones pendientes e historial de cambios.</sub></td>
+    <td><img src="docs/user-manual/screenshots/maintenance-plans.png" alt="Planes preventivos" /><br /><sub><b>Mantenimiento.</b> Próximo vencimiento de cada activo según su plan.</sub></td>
+  </tr>
+</table>
+
+## El ciclo de un alquiler
+
+```mermaid
+flowchart LR
+  A["<b>Preparar</b><br/>activos y clientes"] --> B["<b>Reservar</b><br/>borrador con tarifa óptima"]
+  B --> C["<b>Confirmar</b><br/>sin conflictos bloqueantes"]
+  C --> D["<b>Salida</b><br/>inspección y despacho"]
+  D --> E["<b>Devolución</b><br/>inspección y cierre"]
+  E --> F["<b>Comparar</b><br/>daños nuevos y taller"]
+```
+
+Cada reserva avanza por estados y cada paso tiene su requisito:
+
+```mermaid
+stateDiagram-v2
+  direction LR
+  state "En curso" as EnCurso
+  [*] --> Borrador
+  Borrador --> Confirmada: Confirmar
+  Confirmada --> EnCurso: Despachar
+  EnCurso --> Finalizada: Registrar devolución
+  Borrador --> Cancelada: Cancelar
+  Confirmada --> Cancelada: Cancelar
+```
+
+| Acción                   | Requisito                                                                                                                          |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Confirmar**            | Unidad asignada, cliente sin bloqueo y sin conflictos bloqueantes (solape, mantenimiento, unidad no operativa, documento vencido). |
+| **Despachar**            | Inspección de salida registrada y que no sea "No apto".                                                                            |
+| **Registrar devolución** | Inspección de devolución registrada, con cualquier veredicto.                                                                      |
+| **Cancelar**             | Un motivo escrito. Solo desde borrador o confirmada.                                                                               |
+
+## Roles y permisos
+
+Cada cuenta tiene un rol. Oruga **oculta** lo que el rol no puede usar en lugar de mostrarlo deshabilitado.
+
+| Módulo                  | Administrador |    Planificador     |        Inspector        |    Mantenimiento     | Gerente |
+| ----------------------- | :-----------: | :-----------------: | :---------------------: | :------------------: | :-----: |
+| Tablero                 |     Total     |         Ver         |            —            |         Ver          |   Ver   |
+| Planificador y Reservas |     Total     |        Total        | Ver, entregar y recibir |         Ver          |   Ver   |
+| Inventario              |     Total     |         Ver         |           Ver           | Ver y cambiar estado |   Ver   |
+| Inspecciones            |     Total     |         Ver         |       Ver y crear       |         Ver          |   Ver   |
+| Mantenimiento           |     Total     |         Ver         |           Ver           |        Total         |   Ver   |
+| Clientes                |     Total     | Ver, crear y editar |           Ver           |          —           |   Ver   |
+| Ubicación               |     Total     |         Ver         |           Ver           |         Ver          |   Ver   |
+| Plantillas              |     Total     |          —          |            —            |          —           |   Ver   |
+
+## Inicio rápido
+
+Necesitas **Node.js 20+** y **npm 10+**.
 
 ```bash
-# Instalar dependencias
 npm install
-
-# Iniciar servidor de desarrollo (con MSW y telemetría simulada en el navegador)
 npm run dev
-
-# Verificación de tipos (TypeScript estricto)
-npm run typecheck
-
-# Linter (ESLint + jsx-a11y + react-hooks)
-npm run lint
-
-# Pruebas unitarias y de integración (Vitest)
-npm test
-
-# Pruebas de invariancia de zona horaria (America/Caracas y Asia/Tokyo)
-npm run test:tz
-
-# Compilación de producción
-npm run build
 ```
+
+Abre la dirección que muestra la terminal (normalmente `http://localhost:5173`) y entra con una de las cuentas de demostración. Todas usan la clave **`oruga2026`**, y la pantalla de acceso las rellena con un toque.
+
+| Persona               | Rol                   | Correo                             |
+| --------------------- | --------------------- | ---------------------------------- |
+| Mariana Urdaneta      | Administrador         | `mariana.urdaneta@oruga.com.ve`    |
+| Luis Alberto Ferrer   | Planificador          | `luis.ferrer@oruga.com.ve`         |
+| José Gregorio Morillo | Inspector de patio    | `jose.morillo@oruga.com.ve`        |
+| Carlos Briceño        | Jefe de mantenimiento | `carlos.briceno@oruga.com.ve`      |
+| Andreína Colmenares   | Gerente               | `andreina.colmenares@oruga.com.ve` |
+
+<table>
+  <tr>
+    <td width="62%"><img src="docs/user-manual/screenshots/login.png" alt="Pantalla de acceso" /></td>
+    <td width="38%"><img src="docs/user-manual/screenshots/login-mobile.png" alt="Acceso desde un teléfono" /></td>
+  </tr>
+</table>
+
+> [!IMPORTANT]
+> Abre Oruga desde `localhost` o un sitio con HTTPS: la protección de las claves usa Web Crypto, que el navegador solo habilita en contextos seguros.
+
+### Cuentas y datos locales
+
+- **La base arranca vacía.** Solo vienen los catálogos (sedes, categorías, plantillas, planes de mantenimiento) y las cinco cuentas de demostración. Los activos, clientes y reservas los registras tú.
+- **Todo vive en el navegador.** IndexedDB, base `keyval-store`: las cuentas en `oruga.cuentas` y los datos operativos en `oruga.datos`. Otro navegador o una ventana privada tienen su propia base.
+- **Claves protegidas.** Se guarda una sal aleatoria por cuenta y el hash PBKDF2-SHA256 (600 000 iteraciones); nunca la clave en claro. Al entrar se emite un token que viaja como `Authorization: Bearer`; si el servidor simulado no lo reconoce, responde 401 y la app vuelve al acceso.
+- **Reloj de demostración.** La app arranca siempre el lunes 2 de noviembre de 2026 a las 09:30 (hora de Maracaibo) y avanza en tiempo real. Se cambia con `VITE_DEMO_HOY`.
+- **Panel de desarrollo.** Desde la cabecera permite simular latencia y errores, pausar el tiempo real y vaciar la base local.
+
+Con un backend real basta con definir `VITE_API_URL`: MSW se desactiva y las mismas pantallas llaman a la API.
+
+## Manual de usuario
+
+El manual en PDF está en [`docs/user-manual/oruga-user-manual.pdf`](docs/user-manual/oruga-user-manual.pdf). Tiene 17 capítulos: primeros pasos, la interfaz, roles, el recorrido completo de un alquiler, un capítulo por módulo, preguntas frecuentes y glosario.
+
+Se genera desde el código con capturas reales de la aplicación:
+
+```bash
+npm run manual       # levanta Vite, captura las pantallas con Playwright y arma el PDF
+npm run manual:pdf   # solo vuelve a armar el PDF desde docs/user-manual/manual.html
+```
+
+Usa el Chromium de Playwright (`npx playwright install chromium`) o cualquier navegador basado en Chromium indicado en `BROWSER_PATH`.
+
+## Comandos
+
+| Comando             | Qué hace                                                     |
+| ------------------- | ------------------------------------------------------------ |
+| `npm run dev`       | Servidor de desarrollo con MSW y telemetría simulada.        |
+| `npm run build`     | Verificación de tipos y compilación de producción.           |
+| `npm run typecheck` | TypeScript estricto.                                         |
+| `npm run lint`      | ESLint con reglas de accesibilidad (jsx-a11y) y de hooks.    |
+| `npm test`          | Pruebas unitarias y de integración con Vitest.               |
+| `npm run test:tz`   | Pruebas de zona horaria en `America/Caracas` y `Asia/Tokyo`. |
+| `npm run manual`    | Regenera el manual de usuario en PDF.                        |
 
 ## Arquitectura
 
-- `src/api/`: Contrato de tipos (`contrato.ts`), cliente RTK Query (`baseApi.ts`) y hooks de caché compartida.
-- `src/domain/`: Reglas de negocio puras sin acoplamiento a React (intervalos, detección de conflictos, máquina de estados de reserva, tarifas óptimas, vencimientos de mantenimiento y motor de inspección).
-- `src/mocks/`: Base de datos en memoria con semilla determinista (`seed.ts`), manejadores HTTP (`handlers/`) y generador de eventos en tiempo real (`tiempoReal.ts`).
-- `src/shared/`: Kit de interfaz basado en Radix UI y tokens industriales (`ui/`), utilidades de fechas con soporte IANA (`fechas.ts`) y formateadores (`formato.ts`).
-- `src/features/`: Módulos funcionales aislados con carga perezosa y Error Boundary individual.
+```text
+src/
+├── api/        Contrato de tipos (contrato.ts) y cliente RTK Query con caché compartida
+├── domain/     Reglas de negocio puras: conflictos, máquina de estados, tarifas, vencimientos, inspección
+├── mocks/      API simulada con MSW, base local en IndexedDB, cuentas y eventos en tiempo real
+├── shared/     Kit de interfaz sobre Radix UI, tokens, fechas con zona IANA y formateadores
+├── features/   Un módulo por carpeta, con carga perezosa y Error Boundary propio
+└── app/        Shell, rutas, permisos por rol y estado de interfaz
+```
+
+**Stack:** React 19 · TypeScript · Vite · Tailwind CSS 4 · Redux Toolkit y RTK Query · React Router 7 · Radix UI · GSAP · Three.js · Leaflet · Recharts · MSW · Vitest.
+
+El contrato de diseño que siguen todas las pantallas está en [`docs/DISENO.md`](docs/DISENO.md).
+
+## Créditos
+
+Las fotografías de equipos y escenas provienen de Wikimedia Commons con licencias libres. El detalle de autores y licencias está en [`public/img/LICENCIAS.md`](public/img/LICENCIAS.md) y en la pantalla **Créditos de imágenes** de la aplicación.
