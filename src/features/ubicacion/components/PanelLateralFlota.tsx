@@ -1,4 +1,3 @@
-import { useState, useMemo } from 'react';
 import type { Sede } from '@/api/contrato';
 import { ETIQUETA_ESTADO_VISIBLE } from '@/domain/estadoActivo';
 import type { ActivoTelemetria } from '../useTelemetria';
@@ -12,9 +11,14 @@ import {
 
 interface PanelLateralFlotaProps {
   activos: ActivoTelemetria[];
+  totalActivos: number;
   sedes: Sede[];
   activoSeleccionadoId: string | null;
   onSeleccionarActivo: (id: string | null) => void;
+  busqueda: string;
+  onCambiarBusqueda: (valor: string) => void;
+  soloAlertas: boolean;
+  onAlternarSoloAlertas: () => void;
   sedeFiltro: string;
   onCambiarSedeFiltro: (sedeId: string) => void;
   estadoFiltro: string;
@@ -23,39 +27,23 @@ interface PanelLateralFlotaProps {
 }
 
 export function PanelLateralFlota({
-  activos,
+  activos: filtrados,
+  totalActivos,
   sedes,
   activoSeleccionadoId,
   onSeleccionarActivo,
+  busqueda,
+  onCambiarBusqueda,
+  soloAlertas,
+  onAlternarSoloAlertas,
   sedeFiltro,
   onCambiarSedeFiltro,
   estadoFiltro,
   onCambiarEstadoFiltro,
   alertasGeocerca,
 }: PanelLateralFlotaProps) {
-  const [busqueda, setBusqueda] = useState('');
-  const [soloAlertas, setSoloAlertas] = useState(false);
-
-  const filtrados = useMemo(() => {
-    return activos.filter((item) => {
-      if (soloAlertas && !item.fueraDeGeocerca) return false;
-      if (sedeFiltro !== 'todas' && item.activo.sedeBaseId !== sedeFiltro) return false;
-      if (estadoFiltro !== 'todos' && item.estado !== estadoFiltro) return false;
-      if (!busqueda.trim()) return true;
-
-      const q = busqueda.toLowerCase();
-      return (
-        item.activo.codigo.toLowerCase().includes(q) ||
-        item.activo.modelo.toLowerCase().includes(q) ||
-        item.activo.marca.toLowerCase().includes(q) ||
-        (item.activo.placa?.toLowerCase().includes(q) ?? false) ||
-        (item.cliente?.nombre.toLowerCase().includes(q) ?? false)
-      );
-    });
-  }, [activos, soloAlertas, sedeFiltro, estadoFiltro, busqueda]);
-
   return (
-    <div className="flex flex-col h-full bg-panel border-r border-line w-80 md:w-96 shrink-0 z-10 shadow-panel">
+    <div className="z-10 flex max-h-[45%] w-full shrink-0 flex-col border-b border-line bg-panel shadow-panel md:h-full md:max-h-none md:w-80 md:border-b-0 md:border-r lg:w-96">
       {/* Cabecera del panel */}
       <div className="p-4 border-b border-line space-y-3 bg-panel-2">
         <div className="flex items-center justify-between">
@@ -64,7 +52,7 @@ export function PanelLateralFlota({
             <h2 className="text-sm font-semibold text-ink">Telemetría de Flota</h2>
           </div>
           <span className="text-xs px-2 py-0.5 rounded-full bg-accent-soft text-accent-fg font-mono font-medium">
-            {filtrados.length} / {activos.length}
+            {filtrados.length} / {totalActivos}
           </span>
         </div>
 
@@ -78,7 +66,7 @@ export function PanelLateralFlota({
             type="text"
             placeholder="Buscar por código, modelo, cliente..."
             value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
+            onChange={(e) => onCambiarBusqueda(e.target.value)}
             className="w-full pl-9 pr-3 py-1.5 bg-panel border border-line rounded-lg text-xs text-ink placeholder:text-ink-3 focus:outline-none focus:border-accent"
           />
         </div>
@@ -130,7 +118,7 @@ export function PanelLateralFlota({
         {alertasGeocerca.length > 0 && (
           <button
             type="button"
-            onClick={() => setSoloAlertas(!soloAlertas)}
+            onClick={onAlternarSoloAlertas}
             className={`w-full flex items-center justify-between p-2 rounded-lg text-xs font-medium transition-colors ${
               soloAlertas
                 ? 'bg-danger text-white'

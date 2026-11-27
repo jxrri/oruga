@@ -13,7 +13,7 @@ import { estadoVisible } from '@/domain/estadoActivo';
 import { cn } from '@/shared/lib/cn';
 import { aMs, MS_MINUTO } from '@/shared/lib/fechas';
 import { hashTexto, srcCategoria } from '@/shared/lib/imagenes';
-import { Avatar, Tooltip } from '@/shared/ui';
+import { Avatar, Badge, Tooltip } from '@/shared/ui';
 import { EstadoActivoBadge } from '@/shared/ui/dominio';
 import type { ColumnaTiempo } from '../useEscalaTiempo';
 import { BarraReserva } from './BarraReserva';
@@ -35,6 +35,7 @@ export interface FilaTimelineProps {
   esDestinoArrastre?: boolean;
   ahoraMs: number;
   posXAhora?: number;
+  puedeMover?: boolean;
   onSeleccionarReserva: (reserva: Reserva) => void;
   onIniciarArrastre: (
     e: React.PointerEvent,
@@ -62,6 +63,7 @@ export const FilaTimeline = React.memo(function FilaTimeline({
   esDestinoArrastre = false,
   ahoraMs,
   posXAhora,
+  puedeMover = true,
   onSeleccionarReserva,
   onIniciarArrastre,
   onCrearEnRango,
@@ -99,7 +101,7 @@ export const FilaTimeline = React.memo(function FilaTimeline({
           }
         }}
         className={cn(
-          'sticky left-0 z-10 flex h-full shrink-0 cursor-pointer items-center justify-between gap-2 border-r border-line bg-panel px-3 transition-colors group-hover/fila:bg-panel-2 shadow-[4px_0_12px_-8px_var(--sombra)]',
+          'sticky left-0 z-10 flex h-full shrink-0 cursor-pointer items-center justify-between gap-2 border-r border-line bg-panel px-3 transition-colors group-hover/fila:bg-panel-2',
           esDestinoArrastre && 'bg-accent-soft',
         )}
       >
@@ -120,21 +122,21 @@ export const FilaTimeline = React.memo(function FilaTimeline({
 
           <div className="min-w-0 text-left leading-tight">
             <div className="flex items-center gap-1.5">
-              <span className="font-mono text-xs font-semibold text-ink transition-colors group-hover/fila:text-accent-fg">
+              <span className="font-mono text-[13px] font-medium text-ink transition-colors group-hover/fila:text-accent-fg">
                 {activo.codigo}
               </span>
-              <span className="truncate font-mono tabular text-[10.5px] text-ink-3">
+              <span className="tabular truncate text-xs text-ink-3">
                 {activo.capacidad}&nbsp;{categoria.unidadCapacidad}
               </span>
             </div>
-            <p className="mt-0.5 truncate text-[11px] text-ink-2">
+            <p className="mt-0.5 truncate text-xs text-ink-3">
               {activo.marca} {activo.modelo}
             </p>
           </div>
         </div>
 
         <div className="shrink-0">
-          <EstadoActivoBadge estado={estVis} className="px-2 py-0.5 text-[10.5px]" />
+          <EstadoActivoBadge estado={estVis} />
         </div>
       </div>
 
@@ -152,7 +154,8 @@ export const FilaTimeline = React.memo(function FilaTimeline({
           }
         }}
         className={cn(
-          'pista-timeline-contain isolate z-0 relative flex h-full shrink-0 overflow-hidden bg-panel transition-colors group-hover/fila:bg-panel-2/40 cursor-cell',
+          'pista-timeline-contain isolate z-0 relative flex h-full shrink-0 overflow-hidden bg-panel transition-colors group-hover/fila:bg-panel-2/40',
+          onCrearEnRango && 'cursor-cell',
           esDestinoArrastre && 'bg-accent-soft/35',
         )}
       >
@@ -174,21 +177,21 @@ export const FilaTimeline = React.memo(function FilaTimeline({
             style={{ width: anchoTotal }}
             className="trama-fds pointer-events-none absolute inset-y-1.5 inset-x-0 z-[4] flex items-center border-y border-line-strong px-4"
           >
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-panel px-2.5 py-0.5 font-mono text-[10.5px] font-medium text-ink-2 shadow-xs">
-              {activo.estadoOperativo === 'en_mantenimiento' ? (
-                <WrenchIcon size={13} className="text-mnt" aria-hidden />
-              ) : (
-                <ProhibitIcon size={13} className="text-danger" aria-hidden />
-              )}
+            <Badge
+              icono={activo.estadoOperativo === 'en_mantenimiento' ? WrenchIcon : ProhibitIcon}
+              className="bg-panel ring-line-strong"
+            >
               {activo.estadoOperativo === 'en_mantenimiento'
                 ? 'Unidad en taller'
                 : 'Unidad fuera de servicio'}
-            </span>
+            </Badge>
           </div>
         )}
 
-        {/* Órdenes de mantenimiento programadas (.rayado-mnt) */}
-        {ordenes.map((orden) => {
+        {/* Órdenes de mantenimiento activas (.rayado-mnt) */}
+        {ordenes
+          .filter((orden) => orden.estado !== 'cancelada' && orden.estado !== 'completada')
+          .map((orden) => {
           const oIni = aMs(orden.inicio);
           const oFin = aMs(orden.finEstimado);
           const x = msAX(oIni);
@@ -201,10 +204,8 @@ export const FilaTimeline = React.memo(function FilaTimeline({
               lado="top"
               contenido={
                 <div className="space-y-0.5">
-                  <div className="font-semibold text-ink capitalize">
-                    Mantenimiento {orden.tipo}
-                  </div>
-                  <div className="text-[11px] text-ink-2">{orden.descripcion}</div>
+                  <div className="font-medium text-ink">Mantenimiento {orden.tipo}</div>
+                  <div className="text-ink-2">{orden.descripcion}</div>
                 </div>
               }
             >
@@ -217,7 +218,7 @@ export const FilaTimeline = React.memo(function FilaTimeline({
                 }}
                 onClick={(e) => e.stopPropagation()}
                 aria-label={`Mantenimiento ${orden.tipo}: ${orden.descripcion}`}
-                className="rayado-mnt absolute top-[9px] z-[6] flex h-[34px] items-center gap-1.5 overflow-hidden rounded-md border border-line-strong bg-panel px-2 text-left font-mono text-[11px] font-medium text-ink-2 shadow-xs"
+                className="rayado-mnt absolute top-[9px] z-[6] flex h-[34px] items-center gap-1.5 overflow-hidden rounded-md border border-line-strong bg-panel px-2 text-left text-[11px] font-medium text-ink-2"
               >
                 <WrenchIcon size={14} weight="bold" className="shrink-0 text-mnt" aria-hidden />
                 {ancho + Math.min(x, 0) > 76 && (
@@ -276,6 +277,7 @@ export const FilaTimeline = React.memo(function FilaTimeline({
               ancho={ancho}
               conflicto={conflictosPorReserva.get(reserva.id)}
               estaEnfocada={reservaEnfocadaId === reserva.id}
+              puedeMover={puedeMover}
               onSeleccionar={onSeleccionarReserva}
               onIniciarArrastre={onIniciarArrastre}
             />

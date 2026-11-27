@@ -38,11 +38,11 @@ export function DialogoConfirmarAdvertencia({
       <DialogContent
         titulo={
           <div className="flex items-center gap-2 text-ink">
-            <WarningIcon size={20} weight="bold" className="text-warn shrink-0" aria-hidden />
+            <WarningIcon size={18} className="shrink-0 text-warn" aria-hidden />
             <span>Confirmar asignación con advertencias</span>
           </div>
         }
-        descripcion="La reubicación o ajuste temporal genera avisos operativos que requieren justificación."
+        descripcion="El cambio genera avisos operativos que requieren justificación."
         tamano="md"
         pie={
           <div className="flex items-center gap-2">
@@ -59,16 +59,14 @@ export function DialogoConfirmarAdvertencia({
           </div>
         }
       >
-        <div className="space-y-4 py-2">
+        <div className="space-y-4 py-1">
           {/* Lista de advertencias */}
-          <div className="space-y-2 rounded-xl border border-warn/35 bg-warn-soft p-3.5">
-            <span className="block text-xs font-semibold text-warn">
-              Advertencias detectadas ({conflictos.length}):
-            </span>
-            <ul className="list-inside list-disc space-y-1 text-xs text-ink-2">
+          <div className="space-y-1.5 rounded-lg bg-warn-soft p-3.5">
+            <p className="text-[13px] font-medium text-warn">Advertencias ({conflictos.length})</p>
+            <ul className="space-y-1 text-[13px] text-ink-2">
               {conflictos.map((c, i) => (
                 <li key={i}>
-                  <strong className="font-mono font-semibold text-ink">{c.codigo}:</strong> {c.mensaje}
+                  <span className="font-mono font-medium text-ink">{c.codigo}:</span> {c.mensaje}
                 </li>
               ))}
             </ul>

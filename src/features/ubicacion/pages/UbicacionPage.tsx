@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useCatalogos } from '@/api/hooks';
 import { useTelemetria } from '../useTelemetria';
@@ -18,10 +18,29 @@ export default function UbicacionPage() {
   const { items: activos, alertasGeocerca, cargando } = useTelemetria();
 
   const activoSeleccionadoId = searchParams.get('activoId');
+  const [busqueda, setBusqueda] = useState('');
+  const [soloAlertas, setSoloAlertas] = useState(false);
   const [sedeFiltro, setSedeFiltro] = useState<string>('todas');
   const [estadoFiltro, setEstadoFiltro] = useState<string>('todos');
   const [mostrarGeocercas, setMostrarGeocercas] = useState(true);
   const [mostrarSedes, setMostrarSedes] = useState(true);
+
+  const activosFiltrados = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    return activos.filter((item) => {
+      if (soloAlertas && !item.fueraDeGeocerca) return false;
+      if (sedeFiltro !== 'todas' && item.activo.sedeBaseId !== sedeFiltro) return false;
+      if (estadoFiltro !== 'todos' && item.estado !== estadoFiltro) return false;
+      if (!q) return true;
+      return (
+        item.activo.codigo.toLowerCase().includes(q) ||
+        item.activo.modelo.toLowerCase().includes(q) ||
+        item.activo.marca.toLowerCase().includes(q) ||
+        (item.activo.placa?.toLowerCase().includes(q) ?? false) ||
+        (item.cliente?.nombre.toLowerCase().includes(q) ?? false)
+      );
+    });
+  }, [activos, soloAlertas, sedeFiltro, estadoFiltro, busqueda]);
 
   const handleSeleccionarActivo = (id: string | null) => {
     if (id) {
@@ -92,12 +111,17 @@ export default function UbicacionPage() {
       </div>
 
       {/* Contenido: Panel lateral + Mapa */}
-      <div className="flex-1 flex relative overflow-hidden">
+      <div className="relative flex flex-1 flex-col overflow-hidden md:flex-row">
         <PanelLateralFlota
-          activos={activos}
+          activos={activosFiltrados}
+          totalActivos={activos.length}
           sedes={sedes}
           activoSeleccionadoId={activoSeleccionadoId}
           onSeleccionarActivo={handleSeleccionarActivo}
+          busqueda={busqueda}
+          onCambiarBusqueda={setBusqueda}
+          soloAlertas={soloAlertas}
+          onAlternarSoloAlertas={() => setSoloAlertas((v) => !v)}
           sedeFiltro={sedeFiltro}
           onCambiarSedeFiltro={setSedeFiltro}
           estadoFiltro={estadoFiltro}
@@ -105,14 +129,14 @@ export default function UbicacionPage() {
           alertasGeocerca={alertasGeocerca}
         />
 
-        <div className="flex-1 relative h-full">
+        <div className="relative min-h-[260px] flex-1 md:h-full">
           {cargando ? (
             <div className="w-full h-full flex items-center justify-center bg-canvas text-ink-3 space-y-2">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
             </div>
           ) : (
             <MapaFlota
-              activos={activos}
+              activos={activosFiltrados}
               sedes={sedes}
               activoSeleccionadoId={activoSeleccionadoId}
               onSeleccionarActivo={handleSeleccionarActivo}

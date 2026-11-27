@@ -38,8 +38,8 @@ export function calcularDistanciaMetros(lat1: number, lon1: number, lat2: number
   return Math.round(R * c);
 }
 
-// Radio por defecto permitido para obras de clientes: 850 metros
-const RADIO_GEOFENCE_DEFAULT = 850;
+// Radio permitido para obras de clientes: 1200 metros
+const RADIO_GEOFENCE_DEFAULT = 1200;
 
 export function useTelemetria() {
   const { data: activos = [], isLoading: cargandoActivos } = useGetActivosQuery();
@@ -85,11 +85,11 @@ export function useTelemetria() {
         let fueraDeGeocerca = false;
 
         if (reservaEnCurso) {
-          // El centro asignado de la obra alrededor de la sede o punto de entrega
-          const centroBase = sede?.coordenadas ?? { lat: 10.48, lng: -66.9 };
-          // Coordenada objetivo para la obra del cliente
-          const obraLat = +(centroBase.lat + 0.045).toFixed(5);
-          const obraLng = +(centroBase.lng + 0.035).toFixed(5);
+          // Mismo centro de obra que asigna el despacho en handlers/reservas.ts (+0.03, +0.04 desde la sede de retiro)
+          const sedeRetiro = sedePorId.get(reservaEnCurso.sedeRetiroId) ?? sede;
+          const centroBase = sedeRetiro?.coordenadas ?? { lat: 10.48, lng: -66.9 };
+          const obraLat = +(centroBase.lat + 0.03).toFixed(5);
+          const obraLng = +(centroBase.lng + 0.04).toFixed(5);
 
           obra = {
             lat: obraLat,

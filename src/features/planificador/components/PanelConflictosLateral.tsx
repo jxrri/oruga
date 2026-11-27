@@ -1,13 +1,7 @@
 import { useMemo, useState } from 'react';
-import {
-  ArrowRightIcon,
-  CheckCircleIcon,
-  WarningIcon,
-  XIcon,
-} from '@phosphor-icons/react';
+import { ArrowRightIcon, CheckCircleIcon, XIcon } from '@phosphor-icons/react';
 import type { Activo, ID, Reserva, ZonaIANA } from '@/api/contrato';
 import type { ConflictoAbierto } from '@/domain/conflictos';
-import { cn } from '@/shared/lib/cn';
 import { desdeMs, formatear } from '@/shared/lib/fechas';
 import { EmptyState, IconButton, SegmentedControl } from '@/shared/ui';
 import { ConflictoBadge } from '@/shared/ui/dominio';
@@ -54,33 +48,17 @@ export function PanelConflictosLateral({
   return (
     <aside
       aria-label="Inspector de conflictos de programación"
-      className="z-20 flex w-80 sm:w-[332px] shrink-0 flex-col border-l border-line bg-panel select-none"
+      className="z-20 flex w-[332px] shrink-0 select-none flex-col border-l border-line bg-panel max-md:absolute max-md:inset-y-0 max-md:right-0 max-md:w-[min(20rem,calc(100%-2rem))] max-md:shadow-flotante"
     >
       {/* Cabecera del inspector */}
-      <div className="flex items-center justify-between border-b border-line px-3.5 py-3">
-        <div className="flex items-center gap-2.5">
-          <div
-            className={cn(
-              'grid size-8 place-items-center rounded-lg border',
-              conflictos.length > 0
-                ? 'border-danger/30 bg-danger-soft text-danger'
-                : 'border-ok/30 bg-ok-soft text-ok',
-            )}
-          >
-            {conflictos.length > 0 ? (
-              <WarningIcon size={16} weight="bold" aria-hidden />
-            ) : (
-              <CheckCircleIcon size={16} weight="bold" aria-hidden />
-            )}
-          </div>
-          <div>
-            <h2 className="text-xs font-semibold text-ink">Inspector de conflictos</h2>
-            <p className="font-mono tabular text-[10.5px] text-ink-3">
-              {conflictos.length === 0
-                ? 'Cronograma libre de choques'
-                : `${totalBloqueantes} bloqueantes · ${totalAdvertencias} avisos`}
-            </p>
-          </div>
+      <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-3.5">
+        <div className="min-w-0">
+          <h2 className="text-[15px] font-semibold text-ink">Conflictos</h2>
+          <p className="tabular text-[13px] text-ink-3">
+            {conflictos.length === 0
+              ? 'Cronograma sin choques'
+              : `${totalBloqueantes} bloqueantes, ${totalAdvertencias} avisos`}
+          </p>
         </div>
 
         <IconButton
@@ -89,12 +67,13 @@ export function PanelConflictosLateral({
           onClick={onCerrar}
           tamano="sm"
           variante="fantasma"
+          className="-mr-1.5"
         />
       </div>
 
       {/* Selector por severidad cuando hay conflictos */}
       {conflictos.length > 0 && (
-        <div className="border-b border-line bg-panel-2 px-3.5 py-2">
+        <div className="px-4 pb-3">
           <SegmentedControl<FiltroSeveridad>
             valor={filtro}
             onCambio={setFiltro}
@@ -111,7 +90,7 @@ export function PanelConflictosLateral({
       )}
 
       {/* Listado de hallazgos */}
-      <div className="flex-1 space-y-2.5 overflow-y-auto p-3">
+      <div className="flex-1 divide-y divide-line overflow-y-auto border-t border-line">
         {conflictosFiltrados.length === 0 ? (
           <EmptyState
             icono={CheckCircleIcon}
@@ -131,8 +110,6 @@ export function PanelConflictosLateral({
           conflictosFiltrados.map((item, idx) => {
             const activo = item.activoId ? mapaActivos.get(item.activoId) : undefined;
             const reserva = mapaReservas.get(item.reservaId);
-            const esBloqueante = item.conflicto.severidad === 'bloqueante';
-
             return (
               <div
                 key={`${item.reservaId}-${item.conflicto.codigo}-${idx}`}
@@ -145,13 +122,10 @@ export function PanelConflictosLateral({
                     onCentrarReserva(item.reservaId);
                   }
                 }}
-                className={cn(
-                  'group cursor-pointer space-y-2 rounded-xl border border-line border-l-[3px] bg-panel-2/60 p-3 text-left transition-colors hover:border-line-strong hover:bg-panel-2',
-                  esBloqueante ? 'border-l-danger' : 'border-l-warn',
-                )}
+                className="group cursor-pointer space-y-1.5 px-4 py-3 text-left transition-colors duration-150 ease-salida hover:bg-panel-2"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-xs font-semibold text-ink">
+                  <span className="font-mono text-[13px] font-medium text-ink">
                     {reserva?.codigo ?? item.reservaId}
                   </span>
                   <ConflictoBadge
@@ -160,25 +134,20 @@ export function PanelConflictosLateral({
                   />
                 </div>
 
-                <p className="text-xs leading-snug text-ink-2">
+                <p className="texto-bonito text-[13px] leading-snug text-ink-2">
                   {item.conflicto.mensaje}
                 </p>
 
-                <div className="flex items-center justify-between border-t border-line pt-2 font-mono tabular text-[10.5px] text-ink-3">
-                  <span className="font-medium text-ink-2">
-                    {activo?.codigo ?? 'Sin unidad'}
-                  </span>
-                  <span>
+                <div className="flex items-center justify-between gap-2 text-xs text-ink-3">
+                  <span className="truncate font-mono tabular">
+                    {activo?.codigo ?? 'Sin unidad'},{' '}
                     {formatear(
                       reserva?.inicio ?? desdeMs(item.inicio),
                       zona,
                       'dd MMM HH:mm',
                     )}
                   </span>
-                </div>
-
-                <div className="flex justify-end">
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-accent-fg group-hover:underline">
+                  <span className="inline-flex shrink-0 items-center gap-1 font-medium text-accent-fg group-hover:underline">
                     Ubicar en cronograma
                     <ArrowRightIcon size={12} aria-hidden />
                   </span>

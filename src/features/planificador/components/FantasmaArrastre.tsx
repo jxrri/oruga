@@ -58,24 +58,24 @@ export function FantasmaArrastre({
         ) : (
           <CheckCircleIcon size={15} weight="bold" className="shrink-0 text-ok" aria-hidden />
         )}
-        <span className="truncate font-mono text-xs font-semibold text-ink">
+        <span className="truncate font-mono text-xs font-medium text-ink">
           {reserva.codigo}
         </span>
       </div>
 
-      <span className="ml-2 shrink-0 rounded bg-panel-2 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-ink ring-1 ring-line">
+      <span className="ml-2 shrink-0 rounded-full bg-panel-2 px-1.5 py-0.5 font-mono text-[11px] font-medium text-ink ring-1 ring-line">
         {activoTarget.codigo}
       </span>
 
       {/* HUD de validación en vivo sobre la cápsula arrastrada */}
-      <div className="pointer-events-none absolute -top-[62px] left-1/2 flex -translate-x-1/2 flex-col items-center whitespace-nowrap rounded-xl border border-line bg-raised px-3 py-1.5 text-xs text-ink shadow-flotante">
-        <div className="font-mono tabular text-[10.5px] text-ink-2">
+      <div className="pointer-events-none absolute -top-[62px] left-1/2 flex -translate-x-1/2 flex-col items-center whitespace-nowrap rounded-lg border border-line bg-raised px-3 py-1.5 text-xs text-ink shadow-flotante">
+        <div className="font-mono tabular text-ink-2">
           {fechaInicioTxt} - {fechaFinTxt}
         </div>
         {conflictos.length > 0 ? (
           <div
             className={cn(
-              'mt-0.5 flex items-center gap-1 text-[11px] font-semibold',
+              'mt-0.5 flex items-center gap-1 font-medium',
               esBloqueado ? 'text-danger' : 'text-warn',
             )}
           >
@@ -87,7 +87,7 @@ export function FantasmaArrastre({
             <span>{conflictos[0]?.mensaje}</span>
           </div>
         ) : (
-          <div className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-ok">
+          <div className="mt-0.5 flex items-center gap-1 font-medium text-ok">
             <CheckCircleIcon size={13} weight="bold" aria-hidden />
             <span>Asignación válida en {activoTarget.codigo}</span>
           </div>

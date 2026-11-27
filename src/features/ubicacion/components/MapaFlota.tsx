@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import type { Sede } from '@/api/contrato';
 import { ETIQUETA_ESTADO_VISIBLE, type EstadoVisible } from '@/domain/estadoActivo';
 import type { ActivoTelemetria } from '../useTelemetria';

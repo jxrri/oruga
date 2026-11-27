@@ -10,7 +10,7 @@ import {
   WarningIcon,
 } from '@phosphor-icons/react';
 import type { Conflicto, Reserva, ZonaIANA } from '@/api/contrato';
-import { ETIQUETA_ESTADO_RESERVA } from '@/domain/reservaFSM';
+import { ETIQUETA_ESTADO_RESERVA, permisosEdicion } from '@/domain/reservaFSM';
 import { cn } from '@/shared/lib/cn';
 import { formatear } from '@/shared/lib/fechas';
 import { Tooltip } from '@/shared/ui';
@@ -24,6 +24,7 @@ export interface BarraReservaProps {
   ancho: number;
   conflicto?: Conflicto;
   estaEnfocada?: boolean;
+  puedeMover?: boolean;
   onSeleccionar: (reserva: Reserva) => void;
   onIniciarArrastre: (
     e: React.PointerEvent,
@@ -67,6 +68,7 @@ export const BarraReserva = React.memo(function BarraReserva({
   ancho,
   conflicto,
   estaEnfocada,
+  puedeMover = true,
   onSeleccionar,
   onIniciarArrastre,
 }: BarraReservaProps) {
@@ -76,10 +78,10 @@ export const BarraReserva = React.memo(function BarraReserva({
 
   const esBloqueante = conflicto?.severidad === 'bloqueante';
   const esAdvertencia = conflicto?.severidad === 'advertencia';
-  const esArrastrable = reserva.estado !== 'finalizada' && reserva.estado !== 'cancelada';
-  const permiteRedimensionarIzq =
-    reserva.estado !== 'en_curso' && reserva.estado !== 'finalizada' && reserva.estado !== 'cancelada';
-  const permiteRedimensionarDer = reserva.estado !== 'finalizada' && reserva.estado !== 'cancelada';
+  const perm = permisosEdicion(reserva.estado);
+  const esArrastrable = puedeMover && perm.moverFechas && Boolean(reserva.activoId);
+  const permiteRedimensionarIzq = puedeMover && perm.moverFechas && Boolean(reserva.activoId);
+  const permiteRedimensionarDer = puedeMover && perm.extenderFin && Boolean(reserva.activoId);
 
   const anchoReal = Math.max(ancho, 28);
   // Si la barra inicia antes del borde izquierdo visible, anclamos su etiqueta al margen visible
@@ -100,17 +102,15 @@ export const BarraReserva = React.memo(function BarraReserva({
       contenido={
         <div className="space-y-1">
           <div className="flex items-center justify-between gap-3">
-            <span className="font-mono font-semibold text-ink">{reserva.codigo}</span>
-            <span className="text-[11px] font-medium text-ink-2">
-              {ETIQUETA_ESTADO_RESERVA[reserva.estado]}
-            </span>
+            <span className="font-mono font-medium text-ink">{reserva.codigo}</span>
+            <span className="text-ink-2">{ETIQUETA_ESTADO_RESERVA[reserva.estado]}</span>
           </div>
-          {clienteNombre && <div className="text-xs font-medium text-ink">{clienteNombre}</div>}
-          <div className="font-mono tabular text-[11px] text-ink-3">{rangoFechas}</div>
+          {clienteNombre && <div className="font-medium text-ink">{clienteNombre}</div>}
+          <div className="font-mono tabular text-ink-3">{rangoFechas}</div>
           {conflicto && (
             <div
               className={cn(
-                'mt-1 border-t border-line pt-1 text-[11px] font-medium',
+                'mt-1 border-t border-line pt-1 font-medium',
                 esBloqueante ? 'text-danger' : 'text-warn',
               )}
             >
@@ -141,7 +141,7 @@ export const BarraReserva = React.memo(function BarraReserva({
           }
         }}
         className={cn(
-          'group/barra absolute top-[9px] z-10 flex h-[34px] select-none items-center justify-between overflow-hidden rounded-md border text-xs shadow-[0_1px_2px_rgb(0_0_0/0.06)] transition-[background-color,border-color,box-shadow] duration-150 ease-salida',
+          'group/barra absolute top-[9px] z-10 flex h-[34px] select-none items-center justify-between overflow-hidden rounded-md border text-xs shadow-panel transition-[background-color,border-color,box-shadow] duration-150 ease-salida',
           cfg.bordePunteado && !conflicto ? 'border-dashed' : 'border-solid',
           esArrastrable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer',
           claseColor,
@@ -202,22 +202,20 @@ export const BarraReserva = React.memo(function BarraReserva({
           )}
 
           {anchoVisible >= 64 && (
-            <span className="truncate font-mono tabular text-[11px] font-semibold tracking-tight">
+            <span className="truncate font-mono tabular text-[11px] font-medium">
               {reserva.codigo}
             </span>
           )}
 
           {anchoVisible >= 165 && clienteNombre && (
-            <span className="truncate text-[11px] font-normal opacity-85">
-              · {clienteNombre}
-            </span>
+            <span className="truncate text-[11px] opacity-85">{clienteNombre}</span>
           )}
         </div>
 
         {/* Importe estimado en pastilla legible cuando hay suficiente anchura */}
         {anchoVisible >= 235 && (
-          <div className="mr-2 shrink-0 rounded bg-panel/80 px-1.5 py-0.5 text-[10px] font-semibold text-ink ring-1 ring-line/70">
-            <Monto centavos={reserva.montoEstimado} entero classNameBs="hidden 2xl:inline text-[9.5px]" />
+          <div className="mr-2 shrink-0 rounded-full bg-panel/80 px-1.5 py-0.5 font-mono text-[11px] font-medium text-ink ring-1 ring-line/70">
+            <Monto centavos={reserva.montoEstimado} entero classNameBs="hidden 2xl:inline" />
           </div>
         )}
 

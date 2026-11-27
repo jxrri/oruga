@@ -1,6 +1,8 @@
 import { Link } from 'react-router';
 import type { ActivoTelemetria } from '../useTelemetria';
 import { ETIQUETA_ESTADO_VISIBLE } from '@/domain/estadoActivo';
+import { formatear } from '@/shared/lib/fechas';
+import { EtiquetaMotor } from '@/features/inventario/components/EtiquetaMotor';
 import {
   XIcon,
   ArrowSquareOutIcon,
@@ -102,15 +104,19 @@ export function FichaFlotanteActivo({ item, onCerrar }: FichaFlotanteActivoProps
           <ClockIcon size={18} className="text-ink-2" />
           <div>
             <p className="text-[10px] text-ink-3">Último reporte</p>
-            <p className="font-semibold text-ink">En vivo (hace 4 s)</p>
+            <p className="font-mono font-semibold text-ink">
+              {formatear(item.ubicacion.registradaEn, item.sede?.zonaHoraria ?? 'America/Caracas', 'HH:mm:ss')}
+            </p>
           </div>
         </div>
 
         <div className="p-2 rounded-lg bg-panel-2 border border-line flex items-center gap-2">
           <GasPumpIcon size={18} className="text-ink-2" />
           <div>
-            <p className="text-[10px] text-ink-3">Combustible</p>
-            <p className="font-semibold text-ink">85 % (Normal)</p>
+            <p className="text-[10px] text-ink-3">Motorización</p>
+            <p className="font-semibold text-ink">
+              <EtiquetaMotor tipo={activo.motor} />
+            </p>
           </div>
         </div>
       </div>

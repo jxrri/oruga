@@ -1,0 +1,53 @@
+# Login with password, local database, and UI/performance polish
+
+Objective: real email + password login and sign-up backed by a browser-local database, a faster first load, and a more modern, friendlier look.
+Branch: `feat/frontend-completo` · Delivery: `single-pr` · Test runner: Vitest (`npm test`), `npm run typecheck`, `npm run lint`, `npm run build`.
+
+## Specs
+
+- **S1** "haz una página de login, y demás, que pida clave y eso." Scope: login page with email + password, sign-up page, sign-out. The passwordless "Entrar como…" list and the in-app role switcher are replaced.
+- **S2** "usa una base de datos local para eso." Scope: accounts, password hashes and sessions persisted in IndexedDB.
+- **S3** "sea más rápido" Scope: smaller and non-blocking first load, measured with `npm run build` chunk sizes.
+- **S4** "mejora este proyecto, de manera que se vea más moderno, más estilizado [...] y más amigable." Scope: visual refresh through shared tokens and the app shell, friendlier copy and states.
+- **S5** "quiero que el dashboard se vea así" (reference image, see L3). Scope: `/tablero` and the shell around it follow the reference: light canvas, white cards with large radius and soft shadow, sidebar with the active module filled in blue, a row of KPI cards (title, small caption, big number in the card's own color, unit label, area sparkline ending in a dot), an analytics card with three percentage rings beside a stacked monthly bar chart, and report cards with a big figure plus bars. Series colors: blue, green, orange, violet. Every figure and series must come from real data in the app; nothing invented to fill a chart. Assumption: the reference's brand name, copy and fake numbers are not copied, only the visual language.
+- **S6** "utiliza las mejores skills de frontend para reactualizar el look estético de todo el proyecto. quiero que sea lo más startup-like, moderno, minimalista posible. usa GSAP, Taste skills, Vercel skills, etc. Quiero un mejor diseño en todas las pantallas." Scope: every screen follows the rewritten design contract in `docs/DISENO.md` (the acceptance criteria are its section "Antes de dar una pantalla por terminada"). Visual redesign only: routes, navigation labels, domain content and behavior stay. Assumption: no GSAP or Vercel skill is installed (only `design-taste-frontend`, `frontend-design` and ECC's `make-interfaces-feel-better`), so GSAP is applied through `@gsap/react` per its official practice and the Vercel Web Interface Guidelines through the contract section of that name.
+
+Assumptions (stated, reversible):
+- A1 "Base de datos local" means IndexedDB in the browser through the already installed `idb-keyval`, because `oruga-frontend.md` S6 rules out any backend. It lives inside the MSW mock layer, which plays the server.
+- A2 Passwords are stored as PBKDF2-SHA256 hashes with a per-account salt (Web Crypto), never in clear text. This is a browser-only demo: it is not a security boundary against someone with access to the device.
+- A3 "y demás" is read as sign-up plus sign-out. Password recovery and change are out of scope.
+- A4 Sign-up lets the person pick role and site, because the demo previously let anyone switch role freely.
+- A5 The five seeded accounts share one demo password, shown on the login page only in mock mode.
+- A6 No commits: `oruga-frontend.md` L7 ("no commitees nada") still stands until the user asks.
+
+## Tasks
+
+| ID | Specs | Route | Status | Evidence |
+|----|-------|-------|--------|----------|
+| T1 Accounts store (IndexedDB + PBKDF2), login/sign-up/sign-out handlers, contract, 401 handling | S1 S2 | inline | done | RED (module missing) then GREEN, `src/mocks/cuentas.test.ts` 4/4; browser check L5 |
+| T2 Login form, sign-up page, account menu | S1 | inline | done | browser check L5 |
+| T3 First-load performance | S3 | inline | done | build sizes L6 |
+| T4 Visual refresh: tokens, default light theme, shell, dev fonts | S4 S5 | inline | done | screenshots of login, inventario, reservas (L7) |
+| T5 Dashboard (`/tablero`) redesign after the reference | S5 | delegated (context backstop) | pending | |
+| T6 Design contract v2, tokens, shared recipes (`tarjeta`, `th-tabla`, `fila-tabla`), shell, auth screens, not-found, credits | S6 | inline | pending | |
+| T7 Inventario + Clientes screens | S6 | delegated (parallel) | pending | |
+| T8 Reservas + Mantenimiento screens | S6 | delegated (parallel) | pending | |
+| T9 Inspecciones screens | S6 | delegated (parallel) | pending | |
+| T10 Planificador + Ubicación screens | S6 | delegated (parallel) | pending | |
+
+Route evidence: no Writer trigger (units share `index.css`, the shell and the auth feature). Risk item 2 (auth) fires one independent verifier at the feature end.
+
+## Log
+
+- **L1** (2026-11-12, user, verbatim): "mejora este proyecto, de manera que se vea más moderno, más estilizado, sea más rápido, y más amigable. haz una página de login, y demás, que pida clave y eso. usa una base de datos local para eso."
+- **L3** (2026-11-12, user, verbatim, sent mid-work with an image): "quiero que el dashboard se vea así". The image is a light "modern dashboard" mockup: pale gray-blue canvas; white sidebar whose active item is a solid blue pill with white text; top bar with a search field; four KPI cards in a row, each with a bold title, a tiny gray caption, a large number colored green / blue / violet / orange, a unit label, and a smooth area sparkline in the same color ending in a dot; a wide "analytics" card with a period selector, three thick percentage rings (blue 70 %, green 90 %, orange 60 %) and a stacked bar chart by month (blue over green over orange); below, a report card with a big figure, a small badge, pale orange weekly bars with one bar highlighted, and three sub-figures each underlined in a different color; and a card with a colored square legend, a big number and blue bars. Cards have about 16 px radius and a soft, wide shadow.
+- **L4** Decisions from L3: accent changes from signal yellow to blue in both themes, default theme becomes light, four chart series tokens added (`serie-azul`, `serie-verde`, `serie-naranja`, `serie-violeta`), `rounded-xl` becomes 16 px. Found while checking: `node_modules` is a junction to `../Sólo Front v2/node_modules`, so Vite dev answered 403 for the Geist fonts and the app fell back to the system font; fixed with `server.fs.allow`.
+- **L2** Baseline build (2026-11-12): `reglas` chunk 799 kB (310 kB gzip, all faker locales, awaited before first render), `index` 509 kB, `EscenaTerreno` 914 kB (three.js, lazy on login), `TableroPage` 402 kB.
+- **L5** Browser check (Chrome, isolated profile, dev server): wrong password shows "Correo o clave incorrectos." and keeps focus on the password field; demo account signs in; IndexedDB `keyval-store` / `oruga.cuentas` holds 5 seeded credentials (32 hex salt, 64 hex hash), 1 session, no clear-text password; sign-up rejects a duplicate email on its field, then creates the account (own hash, role-limited menu); reload keeps the session; deleting the IndexedDB record and reloading returns to `/login?volver=%2Ftablero` with the local session cleared (401 path).
+- **L6** Performance: custom Faker without the `en` locale (seed hash unchanged, sha1 849e5fc6…) takes the mock chunk from 799 kB to 514 kB; mocks no longer gate first paint (`esperarAntesDeConsultar`: requests wait, UI renders); Leaflet CSS moved to the map chunk (entry CSS 99 kB to 84 kB); login and sign-up share one layout route so the 3D scene mounts once; `HydrateFallback` plus a static mark in `index.html` replace the blank first screen.
+- **L7** Root cause found for the unstyled look of several modules: about 600 uses of class names from another design system (`text-muted-foreground`, `border-border`, `bg-card`, `text-primary`, raw `emerald/amber/sky` shades) that the theme never defined, so they emitted no CSS (borders fell back to currentColor). Fixed once with aliases to the tokens in `@theme` plus a default border color; marked as a shim to migrate per screen.
+- **L8** Risk tiers: T1 high (item 2, auth) and item 3 (changed `LoginBody`, `Usuario.correo`, token format); T2 medium; T3 medium; T4 medium (shared tokens used by every screen). One independent verifier at the feature end.
+- **L9** (2026-11-12, user, verbatim): "utiliza las mejores skills de frontend para reactualizar el look estético de todo el proyecto. quiero que sea lo más startup-like, moderno, minimalista posible. usa GSAP, Taste skills, Vercel skills, etc. Quiero un mejor diseño en todas las pantallas."
+- **L10** Design read (Taste skill 0.B): visual redesign, preserving routes, content and behavior, of an internal B2B operations app, in a Linear/Vercel-style minimalist startup language: neutral base, one blue accent, Geist, hairlines instead of boxes, restrained GSAP motion. Dials 5 / 4 / 5. Audit: only 1 of 18 pages used the shared `EncabezadoPagina` and `useEntrada`; pages carry Title Case headings, uppercase mono labels, colored numbers and about 600 foreign class names. T7 to T10 run as parallel writers with disjoint feature folders (Writer trigger a, plus the context backstop); shared tokens, `src/shared/**` and the shell have one owner (parent).
+- **L11** Independent verifier (auth, 45 probes plus the suite): S1 met; S2 partly, one blocker. **B1**: each browser tab keeps its own in-memory copy and wrote the whole record, so a sign-in in tab B erased an account registered in tab A (same root cause: duplicate sign-up across tabs, a signed-out token coming back). Advisories: malformed stored record could break startup or sign-in; concurrent identical sign-ups both accepted; `volverSeguro` accepted `/\host` and control characters (pre-existing); anonymous `GET usuarios` listed every email. Seed unchanged against baseline `6c1b86a` apart from `correo` and `demo`.
+- **L12** Correction batch for L11 (T1 reopened, then closed): RED first (`no pisa lo que otra pestaña escribió…` and `arranca con un registro guardado mal formado…` failing), then GREEN, `src/mocks/cuentas.test.ts` 6/6 and `src/app/layout/navegacion.test.ts` 2/2. Changes: every write is applied to the stored record inside one IndexedDB transaction (`idb-keyval` `update`), reads that decide something re-read it first, sign-up re-checks the email inside the transaction, stored data is rebuilt field by field and only seeded demo accounts can ever receive the demo credential, the mock server re-reads before answering 401, `volverSeguro` rejects backslashes and control characters, anonymous `GET usuarios` returns demo accounts only. Recheck limited to B1 requested from the same verifier.

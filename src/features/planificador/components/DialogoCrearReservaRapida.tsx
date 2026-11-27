@@ -1,11 +1,23 @@
-import React, { useMemo, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import { CalendarPlusIcon, CheckCircleIcon, ProhibitIcon, WarningIcon } from '@phosphor-icons/react';
-import type { Activo, Categoria, Cliente, ID, InstanteUTC, Reserva, Sede, ZonaIANA } from '@/api/contrato';
+import type {
+  Activo,
+  Categoria,
+  Cliente,
+  ID,
+  OrdenMantenimiento,
+  PlanMantenimiento,
+  Reserva,
+  Sede,
+  ZonaIANA,
+} from '@/api/contrato';
 import { useCrearReservaMutation } from '@/api/baseApi';
 import { clasificar, detectarConflictos, type ContextoActivo, type Propuesta } from '@/domain/conflictos';
 import { cn } from '@/shared/lib/cn';
-import { aMs, ahora, desdeMs, sumarDias } from '@/shared/lib/fechas';
+import { aInputLocal, aMs, ahora, desdeInputLocal, desdeMs, etiquetaDesfase, sumarDias } from '@/shared/lib/fechas';
 import { Button } from '@/shared/ui/Button';
+import { Checkbox } from '@/shared/ui/Checkbox';
 import { Dialog, DialogContent } from '@/shared/ui/Dialog';
 import { ErrorState } from '@/shared/ui/Estados';
 import { Field, Input } from '@/shared/ui/Field';
@@ -23,11 +35,19 @@ export interface DialogoCrearReservaRapidaProps {
   sedes: Sede[];
   clientes: Cliente[];
   reservasExistentes: Reserva[];
+  ordenes?: OrdenMantenimiento[];
+  planes?: PlanMantenimiento[];
   zona: ZonaIANA;
   onReservaCreada?: (reserva: Reserva) => void;
 }
 
-export function DialogoCrearReservaRapida({
+export function DialogoCrearReservaRapida(props: DialogoCrearReservaRapidaProps) {
+  if (!props.abierto) return null;
+  const clave = `${props.activoPreseleccionadoId ?? ''}-${props.inicioPreseleccionadoMs ?? ''}-${props.finPreseleccionadoMs ?? ''}`;
+  return <ContenidoCrearReservaRapida key={clave} {...props} />;
+}
+
+function ContenidoCrearReservaRapida({
   abierto,
   onCerrar,
   activoPreseleccionadoId,
@@ -38,18 +58,29 @@ export function DialogoCrearReservaRapida({
   sedes,
   clientes,
   reservasExistentes,
+  ordenes = [],
+  planes = [],
   zona,
   onReservaCreada,
 }: DialogoCrearReservaRapidaProps) {
   const [crearReserva, { isLoading }] = useCrearReservaMutation();
+  const idForm = useId();
 
-  const [clienteIdState, setClienteId] = useState<string>('');
-  const [activoIdState, setActivoId] = useState<string>('');
-  const [inicioStrState, setInicioStr] = useState<string>('');
-  const [finStrState, setFinStr] = useState<string>('');
-  const [sedeEntregaIdState, setSedeEntregaId] = useState<string>('');
-  const [sedeDevolucionIdState, setSedeDevolucionId] = useState<string>('');
-  const [incluyeOperador, setIncluyeOperador] = useState(false);
+  const actInicial =
+    (activoPreseleccionadoId ? activos.find((a) => a.id === activoPreseleccionadoId) : undefined) ?? activos[0];
+  const iniBase = inicioPreseleccionadoMs ? desdeMs(inicioPreseleccionadoMs) : ahora();
+  const finBase = finPreseleccionadoMs ? desdeMs(finPreseleccionadoMs) : sumarDias(iniBase, 2, zona);
+
+  const [clienteIdState, setClienteId] = useState<string>(() => clientes[0]?.id ?? '');
+  const [activoIdState, setActivoId] = useState<string>(() => actInicial?.id ?? '');
+  const [inicioStrState, setInicioStr] = useState<string>(() => aInputLocal(iniBase, zona));
+  const [finStrState, setFinStr] = useState<string>(() => aInputLocal(finBase, zona));
+  const [sedeEntregaIdState, setSedeEntregaId] = useState<string>(() => actInicial?.sedeBaseId ?? sedes[0]?.id ?? '');
+  const [sedeDevolucionIdState, setSedeDevolucionId] = useState<string>(
+    () => actInicial?.sedeBaseId ?? sedes[0]?.id ?? '',
+  );
+  const [incluyeOperador, setIncluyeOperador] = useState<boolean>(() => Boolean(actInicial?.requiereOperador));
+  const [claveConfirmada, setClaveConfirmada] = useState<string | null>(null);
   const [errorEnvio, setErrorEnvio] = useState<unknown>(null);
 
   const clienteId = clienteIdState || clientes[0]?.id || '';
@@ -60,15 +91,17 @@ export function DialogoCrearReservaRapida({
     () => categorias.find((c) => c.id === activoSeleccionado?.categoriaId),
     [categorias, activoSeleccionado],
   );
+  const clienteSeleccionado = useMemo(() => clientes.find((c) => c.id === clienteId), [clientes, clienteId]);
+  const mapaSedes = useMemo(() => new Map(sedes.map((s) => [s.id, s])), [sedes]);
 
   const sedeEntregaId = sedeEntregaIdState || activoSeleccionado?.sedeBaseId || sedes[0]?.id || '';
   const sedeDevolucionId = sedeDevolucionIdState || activoSeleccionado?.sedeBaseId || sedes[0]?.id || '';
 
-  const iniBase = inicioPreseleccionadoMs ? desdeMs(inicioPreseleccionadoMs) : ahora();
-  const finBase = finPreseleccionadoMs ? desdeMs(finPreseleccionadoMs) : sumarDias(iniBase, 2, zona);
+  const zonaRetiro = mapaSedes.get(sedeEntregaId)?.zonaHoraria ?? zona;
+  const zonaDevolucion = mapaSedes.get(sedeDevolucionId)?.zonaHoraria ?? zona;
 
-  const inicioStr = inicioStrState || iniBase.slice(0, 16);
-  const finStr = finStrState || finBase.slice(0, 16);
+  const inicioIso = useMemo(() => desdeInputLocal(inicioStrState, zonaRetiro), [inicioStrState, zonaRetiro]);
+  const finIso = useMemo(() => desdeInputLocal(finStrState, zonaDevolucion), [finStrState, zonaDevolucion]);
 
   const handleActivoChange = (id: string) => {
     setActivoId(id);
@@ -76,65 +109,80 @@ export function DialogoCrearReservaRapida({
     if (act) {
       setSedeEntregaId(act.sedeBaseId);
       setSedeDevolucionId(act.sedeBaseId);
+      if (act.requiereOperador) setIncluyeOperador(true);
     }
   };
 
   const conflictos = useMemo(() => {
-    if (!activoSeleccionado || !categoriaSeleccionada || !inicioStr || !finStr) return [];
-    const inicioIso = `${inicioStr}:00Z` as InstanteUTC;
-    const finIso = `${finStr}:00Z` as InstanteUTC;
+    if (!activoSeleccionado || !categoriaSeleccionada || !inicioIso || !finIso) return [];
     const iniMs = aMs(inicioIso);
     const finMs = aMs(finIso);
     if (finMs <= iniMs) return [];
 
     const propuesta: Propuesta = {
       activoId: activoSeleccionado.id,
-      clienteId: (clienteId || clientes[0]?.id) as ID,
+      clienteId: clienteId as ID,
       sedeRetiroId: (sedeEntregaId || activoSeleccionado.sedeBaseId) as ID,
       inicio: iniMs,
       fin: finMs,
+      estado: 'borrador',
     };
 
     const ctx: ContextoActivo = {
       activo: activoSeleccionado,
       categoria: categoriaSeleccionada,
-      reservas: reservasExistentes,
-      ordenes: [],
-      zona,
+      reservas: reservasExistentes.filter((r) => r.activoId === activoSeleccionado.id),
+      ordenes: ordenes.filter((o) => o.activoId === activoSeleccionado.id),
+      planes,
+      cliente: clienteSeleccionado,
+      zona: mapaSedes.get(activoSeleccionado.sedeBaseId)?.zonaHoraria ?? zona,
+      nombreSede: (id) => mapaSedes.get(id)?.nombre ?? 'otra sede',
     };
 
     return detectarConflictos(propuesta, ctx);
   }, [
     activoSeleccionado,
     categoriaSeleccionada,
-    inicioStr,
-    finStr,
+    inicioIso,
+    finIso,
     clienteId,
-    clientes,
     sedeEntregaId,
     reservasExistentes,
+    ordenes,
+    planes,
+    clienteSeleccionado,
+    mapaSedes,
     zona,
   ]);
 
   const veredicto = clasificar(conflictos);
   const esBloqueado = veredicto === 'bloqueado';
+  const tieneAdvertencias = veredicto === 'advertencia';
+  const claveAdvertencias = conflictos.map((c) => `${c.codigo}:${c.con ?? ''}`).join('|');
+  const advertenciasConfirmadas = claveConfirmada === claveAdvertencias;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorEnvio(null);
+
     if (esBloqueado) {
       setErrorEnvio('No es posible crear la reserva con conflictos bloqueantes.');
       return;
     }
-    const inicioIso = `${inicioStr}:00Z` as InstanteUTC;
-    const finIso = `${finStr}:00Z` as InstanteUTC;
-
-    if (aMs(finIso) <= aMs(inicioIso)) {
+    if (tieneAdvertencias && !advertenciasConfirmadas) {
+      setErrorEnvio('Debes confirmar la casilla de advertencias operativas para continuar.');
+      return;
+    }
+    if (!inicioIso || !finIso || aMs(finIso) <= aMs(inicioIso)) {
       setErrorEnvio('La fecha de fin debe ser posterior a la fecha de inicio.');
       return;
     }
-
+    if (!clienteId) {
+      setErrorEnvio('Debe registrar y seleccionar un cliente primero.');
+      return;
+    }
     if (!activoSeleccionado) {
-      setErrorEnvio('Debe seleccionar un activo.');
+      setErrorEnvio('Debe registrar y seleccionar un activo primero.');
       return;
     }
 
@@ -142,13 +190,15 @@ export function DialogoCrearReservaRapida({
       const nueva = await crearReserva({
         clienteId: clienteId as ID,
         categoriaId: activoSeleccionado.categoriaId,
-        activoId: activoId ? (activoId as ID) : null,
+        activoId: activoSeleccionado.id,
         sedeRetiroId: (sedeEntregaId || sedes[0]?.id) as ID,
         sedeDevolucionId: (sedeDevolucionId || sedes[0]?.id) as ID,
         inicio: inicioIso,
         fin: finIso,
         conOperador: incluyeOperador,
-        advertenciasAceptadas: [],
+        advertenciasAceptadas: tieneAdvertencias
+          ? [...new Set(conflictos.filter((c) => c.severidad === 'advertencia').map((c) => c.codigo))]
+          : [],
       }).unwrap();
 
       onReservaCreada?.(nueva);
@@ -169,7 +219,7 @@ export function DialogoCrearReservaRapida({
         const cat = categorias.find((c) => c.id === a.categoriaId);
         return {
           valor: a.id,
-          etiqueta: `${a.codigo} · ${a.marca} ${a.modelo} (${cat?.nombre ?? ''})`,
+          etiqueta: `${a.codigo}, ${a.marca} ${a.modelo} (${cat?.nombre ?? ''})`,
         };
       }),
     [activos, categorias],
@@ -180,31 +230,35 @@ export function DialogoCrearReservaRapida({
     [sedes],
   );
 
+  const faltanDatos = clientes.length === 0 || activos.length === 0;
+
   return (
     <Dialog open={abierto} onOpenChange={(v) => !v && onCerrar()}>
       <DialogContent
         titulo={
           <div className="flex items-center gap-2 text-ink">
-            <CalendarPlusIcon size={20} weight="bold" className="text-accent-fg shrink-0" aria-hidden />
-            <span>Nueva reserva rápida</span>
+            <CalendarPlusIcon size={18} className="shrink-0 text-ink-3" aria-hidden />
+            <span>Nueva reserva</span>
           </div>
         }
-        descripcion="Registre una reserva directamente sobre el cronograma con verificación inmediata de conflictos."
+        descripcion="Registre una reserva con verificación inmediata de conflictos."
         tamano="lg"
         pie={
-          <div className="flex w-full items-center justify-between">
-            <div className="flex items-center gap-2 text-xs">
-              {conflictos.length === 0 ? (
-                <span className="flex items-center gap-1.5 font-semibold text-ok">
-                  <CheckCircleIcon size={16} weight="bold" aria-hidden /> Horario disponible
+          <div className="flex w-full flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-[13px] font-medium">
+              {faltanDatos ? (
+                <span className="text-ink-3">Registra al menos un activo y un cliente</span>
+              ) : conflictos.length === 0 ? (
+                <span className="flex items-center gap-1.5 text-ok">
+                  <CheckCircleIcon size={16} aria-hidden /> Horario disponible
                 </span>
               ) : esBloqueado ? (
-                <span className="flex items-center gap-1.5 font-semibold text-danger">
-                  <ProhibitIcon size={16} weight="bold" aria-hidden /> Conflicto bloqueante
+                <span className="flex items-center gap-1.5 text-danger">
+                  <ProhibitIcon size={16} aria-hidden /> Conflicto bloqueante
                 </span>
               ) : (
-                <span className="flex items-center gap-1.5 font-semibold text-warn">
-                  <WarningIcon size={16} weight="bold" aria-hidden /> Con advertencia operativa
+                <span className="flex items-center gap-1.5 text-warn">
+                  <WarningIcon size={16} aria-hidden /> Con advertencia operativa
                 </span>
               )}
             </div>
@@ -214,9 +268,10 @@ export function DialogoCrearReservaRapida({
                 Cancelar
               </Button>
               <Button
+                type="submit"
+                form={idForm}
                 variante="primario"
-                onClick={handleSubmit}
-                disabled={esBloqueado}
+                disabled={esBloqueado || faltanDatos || (tieneAdvertencias && !advertenciasConfirmadas)}
                 cargando={isLoading ? 'Creando…' : false}
               >
                 Crear reserva
@@ -225,83 +280,109 @@ export function DialogoCrearReservaRapida({
           </div>
         }
       >
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+        <form id={idForm} onSubmit={handleSubmit} className="space-y-4 py-1">
           {Boolean(errorEnvio) && (
             <ErrorState error={errorEnvio} compacto onCerrar={() => setErrorEnvio(null)} />
           )}
 
-          {/* Conflictos detectados */}
           {conflictos.length > 0 && (
             <div
               className={cn(
-                'space-y-1 rounded-xl border p-3.5 text-xs',
-                esBloqueado
-                  ? 'border-danger/35 bg-danger-soft text-danger'
-                  : 'border-warn/35 bg-warn-soft text-warn',
+                'space-y-2 rounded-lg p-3.5 text-[13px]',
+                esBloqueado ? 'bg-danger-soft text-danger' : 'bg-warn-soft text-warn',
               )}
             >
-              <span className="block font-semibold">
-                Avisos de disponibilidad ({conflictos.length}):
-              </span>
-              <ul className="list-inside list-disc space-y-0.5 text-ink-2">
+              <p className="font-medium">Avisos de disponibilidad ({conflictos.length})</p>
+              <ul className="space-y-1 text-ink-2">
                 {conflictos.map((c, i) => (
-                  <li key={i}>{c.mensaje}</li>
+                  <li key={`${c.codigo}-${c.con ?? i}`}>{c.mensaje}</li>
                 ))}
               </ul>
+              {tieneAdvertencias && (
+                <div className="pt-1">
+                  <Checkbox
+                    checked={advertenciasConfirmadas}
+                    onCheckedChange={(v) => setClaveConfirmada(v ? claveAdvertencias : null)}
+                    etiqueta="Acepto las advertencias operativas para registrar la reserva"
+                  />
+                </div>
+              )}
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
-            <Field etiqueta="Cliente" requerido>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Field
+              etiqueta="Cliente"
+              requerido
+              ayuda={
+                clientes.length === 0 ? (
+                  <Link to="/clientes" onClick={onCerrar} className="font-medium text-accent-fg hover:underline">
+                    Ir a registrar clientes
+                  </Link>
+                ) : undefined
+              }
+            >
               <Select
                 valor={clienteId}
                 onCambio={setClienteId}
+                disabled={clientes.length === 0}
                 opciones={opcionesClientes}
-                placeholder="Seleccione cliente…"
+                placeholder={clientes.length === 0 ? 'Sin clientes registrados' : 'Seleccione cliente…'}
               />
             </Field>
 
-            <Field etiqueta="Equipo asignado" requerido>
+            <Field
+              etiqueta="Equipo asignado"
+              requerido
+              ayuda={
+                activos.length === 0 ? (
+                  <Link to="/inventario" onClick={onCerrar} className="font-medium text-accent-fg hover:underline">
+                    Ir a registrar activos
+                  </Link>
+                ) : undefined
+              }
+            >
               <Select
                 valor={activoId}
                 onCambio={handleActivoChange}
+                disabled={activos.length === 0}
                 opciones={opcionesActivos}
-                placeholder="Seleccione equipo…"
+                placeholder={activos.length === 0 ? 'Sin equipos registrados' : 'Seleccione equipo…'}
               />
             </Field>
 
-            <Field etiqueta="Fecha y hora de inicio" requerido>
+            <Field
+              etiqueta="Fecha y hora de inicio"
+              requerido
+              ayuda={inicioIso ? `${mapaSedes.get(sedeEntregaId)?.ciudad ?? 'Sede'} (${etiquetaDesfase(inicioIso, zonaRetiro)})` : undefined}
+            >
               <Input
                 type="datetime-local"
-                value={inicioStr}
+                value={inicioStrState}
                 onChange={(e) => setInicioStr(e.target.value)}
                 required
               />
             </Field>
 
-            <Field etiqueta="Fecha y hora de fin" requerido>
+            <Field
+              etiqueta="Fecha y hora de fin"
+              requerido
+              ayuda={finIso ? `${mapaSedes.get(sedeDevolucionId)?.ciudad ?? 'Sede'} (${etiquetaDesfase(finIso, zonaDevolucion)})` : undefined}
+            >
               <Input
                 type="datetime-local"
-                value={finStr}
+                value={finStrState}
                 onChange={(e) => setFinStr(e.target.value)}
                 required
               />
             </Field>
 
             <Field etiqueta="Sede de retiro" requerido>
-              <Select
-                valor={sedeEntregaId}
-                onCambio={setSedeEntregaId}
-                opciones={opcionesSedes}
-              />
+              <Select valor={sedeEntregaId} onCambio={setSedeEntregaId} opciones={opcionesSedes} />
             </Field>
 
             <Field etiqueta="Sede de devolución" requerido>
-              <Select
-                valor={sedeDevolucionId}
-                onCambio={setSedeDevolucionId}
-                opciones={opcionesSedes}
-              />
+              <Select valor={sedeDevolucionId} onCambio={setSedeDevolucionId} opciones={opcionesSedes} />
             </Field>
           </div>
 
@@ -310,7 +391,7 @@ export function DialogoCrearReservaRapida({
               checked={incluyeOperador}
               onCheckedChange={setIncluyeOperador}
               etiqueta="Incluir operador certificado"
-              descripcion="Asigna un operario homologado y aplica el recargo diario correspondiente según la categoría."
+              descripcion="Asigna un operario homologado durante todo el período del contrato."
             />
           </div>
         </form>
