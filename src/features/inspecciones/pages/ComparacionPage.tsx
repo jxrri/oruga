@@ -1,34 +1,92 @@
-import { useSearchParams, useNavigate } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import {
-  ArrowLeftIcon,
   CheckCircleIcon,
   ColumnsIcon,
   GasPumpIcon,
   GaugeIcon,
   ProhibitIcon,
   WarningIcon,
-  WrenchIcon,
 } from '@phosphor-icons/react';
-import { useGetInspeccionQuery, useGetPlantillaQuery } from '@/api/baseApi';
+import { useGetInspeccionQuery, useGetPlantillaQuery, useGetReservaQuery } from '@/api/baseApi';
 import { compararInspecciones, type CambioCampo } from '@/domain/inspeccion';
+import { useEntrada } from '@/shared/hooks/useEntrada';
 import { formatear } from '@/shared/lib/fechas';
-import { Button, ErrorState, Skeleton } from '@/shared/ui';
+import { formatearNumero, pluralizar } from '@/shared/lib/formato';
+import { Badge, Button, EmptyState, ErrorState, Skeleton } from '@/shared/ui';
+import { EncabezadoPagina, type Miga } from '@/shared/ui/EncabezadoPagina';
+import { Stat } from '@/shared/ui/Stat';
+import { Respuesta } from '../components/Respuesta';
+
+const MIGAS: Miga[] = [{ etiqueta: 'Inspecciones', to: '/inspecciones' }, { etiqueta: 'Comparación' }];
+
+const conSigno = (n: number) => `${n > 0 ? '+' : ''}${formatearNumero(n)}`;
+
+/** Diagnóstico de un punto de control: ícono y texto, nunca solo color. */
+function CambioBadge({ cambio }: { cambio: CambioCampo }) {
+  switch (cambio) {
+    case 'dano_nuevo':
+      return (
+        <Badge tono="danger" icono={ProhibitIcon}>
+          Daño nuevo
+        </Badge>
+      );
+    case 'reparado':
+      return (
+        <Badge tono="ok" icono={CheckCircleIcon}>
+          Reparado
+        </Badge>
+      );
+    case 'falla_persistente':
+      return (
+        <Badge tono="warn" icono={WarningIcon}>
+          Preexistente
+        </Badge>
+      );
+    case 'igual':
+    default:
+      return <span className="text-[13px] text-ink-3">Sin cambios</span>;
+  }
+}
 
 export default function ComparacionPage() {
+  const { reservaId = '' } = useParams<{ reservaId: string }>();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
-  const salidaId = searchParams.get('salidaId') ?? '';
-  const devolucionId = searchParams.get('devolucionId') ?? '';
+  const salidaParam = searchParams.get('salidaId') ?? '';
+  const devolucionParam = searchParams.get('devolucionId') ?? '';
 
-  const { data: salida, isLoading: cargandoS, error: errorS } = useGetInspeccionQuery(salidaId, {
-    skip: !salidaId,
+  // Si se entra directamente por /inspecciones/comparar/:reservaId sin query params, resuelve desde la reserva
+  const {
+    data: reserva,
+    isLoading: cargandoReserva,
+    error: errorReserva,
+    refetch: recargarReserva,
+  } = useGetReservaQuery(reservaId, {
+    skip: !reservaId || (Boolean(salidaParam) && Boolean(devolucionParam)),
   });
-  const { data: devolucion, isLoading: cargandoD, error: errorD } = useGetInspeccionQuery(devolucionId, {
-    skip: !devolucionId,
-  });
 
-  const { data: plantillaS } = useGetPlantillaQuery(
+  const salidaId = salidaParam || reserva?.inspeccionSalidaId || '';
+  const devolucionId = devolucionParam || reserva?.inspeccionDevolucionId || '';
+
+  const {
+    data: salida,
+    isLoading: cargandoS,
+    error: errorS,
+    refetch: recargarS,
+  } = useGetInspeccionQuery(salidaId, { skip: !salidaId });
+  const {
+    data: devolucion,
+    isLoading: cargandoD,
+    error: errorD,
+    refetch: recargarD,
+  } = useGetInspeccionQuery(devolucionId, { skip: !devolucionId });
+
+  const {
+    data: plantillaS,
+    isLoading: cargandoPlantilla,
+    error: errorPlantilla,
+    refetch: recargarPlantilla,
+  } = useGetPlantillaQuery(
     { id: salida?.plantillaId ?? '', version: salida?.plantillaVersion },
     { skip: !salida },
   );
@@ -37,202 +95,246 @@ export default function ComparacionPage() {
     { skip: !devolucion },
   );
 
-  const cargando = cargandoS || cargandoD;
-  const error = errorS || errorD || !salidaId || !devolucionId;
+  const cargando = cargandoReserva || cargandoS || cargandoD || cargandoPlantilla;
+  const error = errorReserva || errorS || errorD || errorPlantilla;
+
+  const ref = useEntrada<HTMLDivElement>([cargando]);
 
   if (cargando) {
     return (
-      <div className="p-8 space-y-6">
-        <Skeleton className="h-8 w-44" />
-        <div className="grid grid-cols-3 gap-4">
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
+      <div ref={ref} className="mx-auto w-full max-w-[1400px]" aria-busy="true">
+        <div className="mb-5 space-y-3">
+          <Skeleton className="h-4 w-44" />
+          <Skeleton className="h-7 w-80 max-w-full" />
+          <Skeleton className="h-4 w-96 max-w-full" />
         </div>
-        <Skeleton className="h-96 w-full" />
+        <div className="space-y-6">
+          <div className="grid gap-4 sm:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="tarjeta space-y-3 p-5">
+                <Skeleton className="h-4 w-36" />
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-4 w-28" />
+              </div>
+            ))}
+          </div>
+          <div className="tarjeta overflow-hidden">
+            <div className="flex h-10 items-center px-4">
+              <Skeleton className="h-3.5 w-32" />
+            </div>
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="flex h-12 items-center gap-6 border-t border-line px-4">
+                <Skeleton className="h-4 w-56 max-w-[45%]" />
+                <Skeleton className="ml-auto h-4 w-14" />
+                <Skeleton className="h-4 w-14" />
+                <Skeleton className="hidden h-[22px] w-24 rounded-full sm:block" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (error || !salida || !devolucion || !plantillaS) {
+  if (error) {
     return (
-      <div className="p-8">
-        <ErrorState onReintentar={() => navigate('/inspecciones')} />
+      <div ref={ref} className="mx-auto w-full max-w-[1400px]">
+        <EncabezadoPagina migas={MIGAS} titulo="Comparación de inspecciones" />
+        <ErrorState
+          error={error}
+          onReintentar={() => {
+            if (errorReserva) void recargarReserva();
+            if (errorS) void recargarS();
+            if (errorD) void recargarD();
+            if (errorPlantilla && salida) void recargarPlantilla();
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (!salidaId || !devolucionId || !salida || !devolucion || !plantillaS) {
+    return (
+      <div ref={ref} className="mx-auto w-full max-w-[1400px]">
+        <EncabezadoPagina migas={MIGAS} titulo="Comparación de inspecciones" />
+        <EmptyState
+          icono={ColumnsIcon}
+          titulo="Faltan inspecciones para comparar"
+          descripcion="Abra la comparación desde una reserva que tenga inspección de salida y de devolución."
+          accion={
+            <Button asChild>
+              <Link to="/inspecciones">Ver inspecciones</Link>
+            </Button>
+          }
+        />
       </div>
     );
   }
 
   const comparativa = compararInspecciones(salida, devolucion, plantillaS, plantillaD ?? plantillaS);
-
-  const badgeCambio = (cambio: CambioCampo) => {
-    switch (cambio) {
-      case 'dano_nuevo':
-        return (
-          <span className="inline-flex items-center gap-1 rounded bg-destructive/15 border border-destructive/30 px-2 py-0.5 text-[10px] font-bold text-destructive">
-            <ProhibitIcon className="h-3 w-3" /> Daño Nuevo
-          </span>
-        );
-      case 'reparado':
-        return (
-          <span className="inline-flex items-center gap-1 rounded bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
-            <CheckCircleIcon className="h-3 w-3" /> Reparado
-          </span>
-        );
-      case 'falla_persistente':
-        return (
-          <span className="inline-flex items-center gap-1 rounded bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[10px] font-bold text-amber-400">
-            <WarningIcon className="h-3 w-3" /> Preexistente
-          </span>
-        );
-      case 'igual':
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground">
-            Sin cambios
-          </span>
-        );
-    }
-  };
+  const nuevos = comparativa.daniosNuevos.length;
+  const difCombustible = comparativa.difCombustible;
+  const pct = (v: number | undefined) => (v === undefined ? 'sin dato' : `${v} %`);
+  const hayFotos = salida.evidencias.length > 0 || devolucion.evidencias.length > 0;
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-3.5rem)] bg-background">
-      {/* Cabecera */}
-      <div className="border-b border-border bg-card/60 px-6 py-3.5 backdrop-blur-md flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button
-            variante="fantasma"
-            tamano="sm"
-            icono={ArrowLeftIcon}
-            onClick={() => navigate('/inspecciones')}
-          >
-            Inspecciones
-          </Button>
-          <span className="text-border">/</span>
-          <span className="font-semibold text-xs text-foreground">
-            Comparativa Salida vs Devolución
-          </span>
-        </div>
-      </div>
+    <div ref={ref} className="mx-auto w-full max-w-[1400px]">
+      <EncabezadoPagina
+        migas={MIGAS}
+        titulo="Comparación de inspecciones"
+        descripcion={`Salida del ${formatear(salida.realizadaEn, 'America/Caracas', 'dd/MM/yyyy')} frente a devolución del ${formatear(devolucion.realizadaEn, 'America/Caracas', 'dd/MM/yyyy')}. ${
+          nuevos > 0 ? pluralizar(nuevos, 'daño nuevo', 'daños nuevos') : 'Sin daños nuevos'
+        } en ${pluralizar(comparativa.campos.length, 'punto', 'puntos')} de control.`}
+      />
 
-      <div className="max-w-6xl mx-auto w-full p-6 space-y-6 flex-1">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <ColumnsIcon className="h-5 w-5 text-primary" />
-            <span>Auditoría Comparativa de Desgaste y Daños</span>
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Cruce automático de checklists para la liquidación de garantías, recargos de combustible o emisión de órdenes correctivas.
-          </p>
-        </div>
+      <div className="space-y-6">
+        <section aria-label="Resumen" className="grid gap-4 sm:grid-cols-3" data-entrada>
+          <Stat
+            etiqueta="Uso en el alquiler"
+            valor={comparativa.difLectura}
+            formato={conSigno}
+            icono={GaugeIcon}
+            detalle={
+              <>
+                Medidor: de <span className="font-mono">{formatearNumero(salida.lectura)}</span> a{' '}
+                <span className="font-mono">{formatearNumero(devolucion.lectura)}</span>
+              </>
+            }
+          />
+          <Stat
+            etiqueta="Diferencia de combustible"
+            valor={difCombustible ?? 0}
+            formato={difCombustible === null ? () => 'Sin dato' : (n) => `${conSigno(n)} %`}
+            icono={GasPumpIcon}
+            tono={difCombustible !== null && difCombustible < 0 ? 'danger' : 'neutro'}
+            detalle={`Tanque: de ${pct(salida.combustiblePct)} a ${pct(devolucion.combustiblePct)}`}
+          />
+          <Stat
+            etiqueta="Daños nuevos"
+            valor={nuevos}
+            icono={nuevos > 0 ? WarningIcon : CheckCircleIcon}
+            tono={nuevos > 0 ? 'danger' : 'ok'}
+            detalle={
+              nuevos > 0
+                ? 'Genera cargo al cliente o requiere orden de taller.'
+                : 'La unidad retornó en las mismas condiciones.'
+            }
+          />
+        </section>
 
-        {/* Tarjetas Resumen de Diferenciales */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Desgaste de Medidor */}
-          <div className="rounded-xl border border-border bg-card/60 p-4 space-y-1">
-            <span className="text-[10px] text-muted-foreground block font-mono flex items-center gap-1">
-              <GaugeIcon className="h-3.5 w-3.5 text-primary" /> USO CONSUMIDO EN ALQUILER
-            </span>
-            <div className="text-xl font-black font-mono text-foreground">
-              +{comparativa.difLectura}{' '}
-              <span className="text-xs font-normal text-muted-foreground">unidades</span>
+        <section aria-label="Comparación punto a punto" className="tarjeta overflow-hidden" data-entrada>
+          {comparativa.campos.length === 0 ? (
+            <EmptyState
+              icono={ColumnsIcon}
+              titulo="Sin puntos comparables"
+              descripcion="Las plantillas de estas inspecciones no tienen puntos de control en común."
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr>
+                    <th scope="col" className="th-tabla">
+                      Punto de control
+                    </th>
+                    <th scope="col" className="th-tabla">
+                      Salida
+                    </th>
+                    <th scope="col" className="th-tabla">
+                      Devolución
+                    </th>
+                    <th scope="col" className="th-tabla hidden text-right sm:table-cell">
+                      Cambio
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparativa.campos.map(({ campo, salida: valS, devolucion: valD, cambio }) => (
+                    <tr key={campo.id} className="fila-tabla h-12">
+                      <th scope="row" className="px-4 py-2.5 font-normal">
+                        <span className="texto-bonito block text-ink">{campo.etiqueta}</span>
+                        {campo.critico && <span className="block text-[13px] text-ink-3">Punto crítico</span>}
+                        {cambio !== 'igual' && (
+                          <span className="mt-1.5 block sm:hidden">
+                            <CambioBadge cambio={cambio} />
+                          </span>
+                        )}
+                      </th>
+                      <td className="px-4 py-2.5">
+                        <Respuesta
+                          campo={campo}
+                          valor={valS}
+                          esFalla={cambio === 'reparado' || cambio === 'falla_persistente'}
+                        />
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <Respuesta
+                          campo={campo}
+                          valor={valD}
+                          esFalla={cambio === 'dano_nuevo' || cambio === 'falla_persistente'}
+                        />
+                      </td>
+                      <td className="hidden px-4 py-2.5 text-right sm:table-cell">
+                        <CambioBadge cambio={cambio} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <p className="text-[11px] text-muted-foreground font-mono">
-              Salida: {salida.lectura} → Retorno: {devolucion.lectura}
-            </p>
-          </div>
+          )}
+        </section>
 
-          {/* Variación de Combustible */}
-          <div className="rounded-xl border border-border bg-card/60 p-4 space-y-1">
-            <span className="text-[10px] text-muted-foreground block font-mono flex items-center gap-1">
-              <GasPumpIcon className="h-3.5 w-3.5 text-primary" /> DIFERENCIA DE COMBUSTIBLE
-            </span>
-            <div className="text-xl font-black font-mono text-foreground">
-              {comparativa.difCombustible !== null ? (
-                <span
-                  className={
-                    comparativa.difCombustible < 0
-                      ? 'text-destructive'
-                      : comparativa.difCombustible > 0
-                      ? 'text-emerald-400'
-                      : 'text-foreground'
-                  }
-                >
-                  {comparativa.difCombustible > 0 ? `+${comparativa.difCombustible}%` : `${comparativa.difCombustible}%`}
-                </span>
+        {/* Evidencias fotográficas lado a lado (RF-INS-05) */}
+        {hayFotos && (
+          <section aria-label="Evidencias comparadas" className="grid gap-6 lg:grid-cols-2" data-entrada>
+            <div className="tarjeta p-5">
+              <h2 className="text-[15px] font-semibold text-ink">
+                Fotos de salida <span className="font-normal text-ink-3">({salida.evidencias.length})</span>
+              </h2>
+              {salida.evidencias.length === 0 ? (
+                <p className="mt-2 text-[13px] text-ink-3">Sin fotografías registradas en la salida.</p>
               ) : (
-                'N/A'
+                <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {salida.evidencias.map((ev, i) => (
+                    <li key={ev.id ?? i}>
+                      <img
+                        src={ev.url}
+                        alt={`Salida: ${ev.nombre}`}
+                        loading="lazy"
+                        className="aspect-[4/3] w-full rounded-lg border border-line bg-panel-2 object-cover"
+                      />
+                      <p className="mt-1 truncate text-xs text-ink-3">{ev.nombre}</p>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
-            <p className="text-[11px] text-muted-foreground font-mono">
-              Salida: {salida.combustiblePct ?? '—'}% → Retorno: {devolucion.combustiblePct ?? '—'}%
-            </p>
-          </div>
 
-          {/* Daños Nuevos */}
-          <div
-            className={`rounded-xl border p-4 space-y-1 ${
-              comparativa.daniosNuevos.length > 0
-                ? 'border-destructive/30 bg-destructive/10'
-                : 'border-emerald-500/30 bg-emerald-500/10'
-            }`}
-          >
-            <span className="text-[10px] text-muted-foreground block font-mono flex items-center gap-1">
-              <WrenchIcon className="h-3.5 w-3.5 text-primary" /> NUEVOS DAÑOS DETECTADOS
-            </span>
-            <div
-              className={`text-xl font-black font-mono ${
-                comparativa.daniosNuevos.length > 0 ? 'text-destructive' : 'text-emerald-400'
-              }`}
-            >
-              {comparativa.daniosNuevos.length} fallas
+            <div className="tarjeta p-5">
+              <h2 className="text-[15px] font-semibold text-ink">
+                Fotos de devolución <span className="font-normal text-ink-3">({devolucion.evidencias.length})</span>
+              </h2>
+              {devolucion.evidencias.length === 0 ? (
+                <p className="mt-2 text-[13px] text-ink-3">Sin fotografías registradas en la devolución.</p>
+              ) : (
+                <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {devolucion.evidencias.map((ev, i) => (
+                    <li key={ev.id ?? i}>
+                      <img
+                        src={ev.url}
+                        alt={`Devolución: ${ev.nombre}`}
+                        loading="lazy"
+                        className="aspect-[4/3] w-full rounded-lg border border-line bg-panel-2 object-cover"
+                      />
+                      <p className="mt-1 truncate text-xs text-ink-3">{ev.nombre}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            <p className="text-[11px] text-muted-foreground">
-              {comparativa.daniosNuevos.length > 0
-                ? 'Genera cargo al cliente o requiere orden de taller.'
-                : 'La unidad retornó en las mismas condiciones.'}
-            </p>
-          </div>
-        </div>
-
-        {/* Tabla Comparativa Punto a Punto */}
-        <div className="overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur-md shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="border-b border-border bg-muted/30 font-bold uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3">Punto de Control</th>
-                  <th className="px-4 py-3">En Salida ({formatear(salida.realizadaEn, 'America/Caracas', 'dd/MM')})</th>
-                  <th className="px-4 py-3">En Devolución ({formatear(devolucion.realizadaEn, 'America/Caracas', 'dd/MM')})</th>
-                  <th className="px-4 py-3 text-right">Diagnóstico</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {comparativa.campos.map(({ campo, salida: valS, devolucion: valD, cambio }) => (
-                  <tr
-                    key={campo.id}
-                    className={`hover:bg-muted/20 transition-colors ${
-                      cambio === 'dano_nuevo' ? 'bg-destructive/5' : ''
-                    }`}
-                  >
-                    <td className="px-4 py-3">
-                      <span className="font-semibold text-foreground block">{campo.etiqueta}</span>
-                      {campo.critico && (
-                        <span className="text-[10px] font-mono text-destructive uppercase">Punto Crítico</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-muted-foreground">
-                      {typeof valS === 'boolean' ? (valS ? 'OK' : 'Falla') : String(valS ?? '—')}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-foreground font-semibold">
-                      {typeof valD === 'boolean' ? (valD ? 'OK' : 'Falla') : String(valD ?? '—')}
-                    </td>
-                    <td className="px-4 py-3 text-right">{badgeCambio(cambio)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+          </section>
+        )}
       </div>
     </div>
   );

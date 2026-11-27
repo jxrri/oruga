@@ -1,35 +1,65 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router';
-import {
-  FileTextIcon,
-  MagnifyingGlassIcon,
-  PlusIcon,
-  ShieldCheckIcon,
-  XIcon,
-} from '@phosphor-icons/react';
-import { useGetActivosQuery, useGetInspeccionesQuery, useGetReservasQuery, useGetUsuariosQuery } from '@/api/baseApi';
+import { useMemo, type ChangeEvent } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router';
+import { ClipboardTextIcon, FileTextIcon, MagnifyingGlassIcon, PlusIcon } from '@phosphor-icons/react';
+import { useGetActivosQuery, useGetInspeccionesQuery, useGetUsuariosQuery } from '@/api/baseApi';
+import { useReservasGlobales } from '@/api/hooks';
+import { usePuede } from '@/app/hooks';
+import { useEntrada } from '@/shared/hooks/useEntrada';
 import { formatear } from '@/shared/lib/fechas';
-import { Button, EmptyState, ErrorState, Skeleton } from '@/shared/ui';
-import { ResultadoInspeccionBadge } from '@/shared/ui/dominio';
+import { formatearNumero, pluralizar } from '@/shared/lib/formato';
+import { Button, EmptyState, ErrorState, SegmentedControl, Skeleton } from '@/shared/ui';
+import { EncabezadoPagina } from '@/shared/ui/EncabezadoPagina';
+import { Input } from '@/shared/ui/Field';
+import { Select } from '@/shared/ui/Select';
+import { ETIQUETA_RESULTADO, ResultadoInspeccionBadge } from '@/shared/ui/dominio';
+import { ETIQUETA_MOMENTO, MomentoBadge } from '../components/momento';
+
+const MOMENTOS = [
+  { valor: 'todos', etiqueta: 'Todos' },
+  { valor: 'salida', etiqueta: ETIQUETA_MOMENTO.salida },
+  { valor: 'devolucion', etiqueta: ETIQUETA_MOMENTO.devolucion },
+  { valor: 'rutina', etiqueta: ETIQUETA_MOMENTO.rutina },
+] as const;
+
+const RESULTADOS = [
+  { valor: 'todos', etiqueta: 'Todos los resultados' },
+  { valor: 'apto', etiqueta: ETIQUETA_RESULTADO.apto },
+  { valor: 'apto_con_observaciones', etiqueta: ETIQUETA_RESULTADO.apto_con_observaciones },
+  { valor: 'no_apto', etiqueta: ETIQUETA_RESULTADO.no_apto },
+] as const;
 
 export default function InspeccionesPage() {
   const navigate = useNavigate();
+  const ref = useEntrada<HTMLDivElement>();
+  const puedeVerPlantillas = usePuede('ver', 'plantilla');
+  const puedeCrearInspeccion = usePuede('crear', 'inspeccion');
 
   const { data: inspecciones = [], isLoading, error, refetch } = useGetInspeccionesQuery();
   const { data: activos = [] } = useGetActivosQuery();
-  const { data: reservas = [] } = useGetReservasQuery({
-    desde: '2026-01-01T00:00:00Z',
-    hasta: '2027-01-01T00:00:00Z',
-  });
+  const { data: reservas = [] } = useReservasGlobales();
   const { data: usuarios = [] } = useGetUsuariosQuery();
 
   const mapaActivos = useMemo(() => new Map(activos.map((a) => [a.id, a])), [activos]);
   const mapaReservas = useMemo(() => new Map(reservas.map((r) => [r.id, r])), [reservas]);
   const mapaUsuarios = useMemo(() => new Map(usuarios.map((u) => [u.id, u])), [usuarios]);
 
-  const [busqueda, setBusqueda] = useState('');
-  const [filtroMomento, setFiltroMomento] = useState<string>('todos');
-  const [filtroResultado, setFiltroResultado] = useState<string>('todos');
+  // Los filtros viven en la URL: se pueden compartir y Atrás vuelve a la lista como se dejó.
+  const [parametros, setParametros] = useSearchParams();
+  const busqueda = parametros.get('q') ?? '';
+  const filtroMomento = parametros.get('momento') ?? 'todos';
+  const filtroResultado = parametros.get('resultado') ?? 'todos';
+  const hayFiltros = busqueda !== '' || filtroMomento !== 'todos' || filtroResultado !== 'todos';
+
+  const fijarFiltro = (clave: string, valor: string) =>
+    setParametros(
+      (previos) => {
+        const siguientes = new URLSearchParams(previos);
+        if (valor === '' || valor === 'todos') siguientes.delete(clave);
+        else siguientes.set(clave, valor);
+        return siguientes;
+      },
+      { replace: true },
+    );
 
   // Filtrado
   const inspeccionesFiltradas = useMemo(() => {
@@ -59,183 +89,189 @@ export default function InspeccionesPage() {
     return { aptas, conObs, noAptas };
   }, [inspecciones]);
 
+  const descripcion =
+    inspecciones.length > 0
+      ? `${pluralizar(inspecciones.length, 'inspección', 'inspecciones')}: ${formatearNumero(metricas.aptas)} aptas, ${formatearNumero(metricas.conObs)} con observaciones, ${formatearNumero(metricas.noAptas)} no aptas.`
+      : 'Checklists de salida y devolución con lectura, combustible y evidencias.';
+
   return (
-    <div className="flex flex-col min-h-[calc(100vh-3.5rem)] bg-background">
-      {/* Cabecera */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border bg-card/60 px-6 py-4 backdrop-blur-md">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold tracking-tight text-foreground">Control de Inspecciones</h1>
-            <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-mono font-bold text-primary">
-              {inspeccionesFiltradas.length} actas
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Checklists de salida y devolución, auditoría de desgaste, combustible y evidencias fotográficas.
-          </p>
-        </div>
+    <div ref={ref} className="mx-auto w-full max-w-[1400px]">
+      <EncabezadoPagina
+        titulo="Inspecciones"
+        descripcion={descripcion}
+        acciones={
+          <>
+            {puedeVerPlantillas && (
+              <Button asChild>
+                <Link to="/admin/plantillas">
+                  <FileTextIcon size={16} aria-hidden />
+                  Plantillas
+                </Link>
+              </Button>
+            )}
+            {puedeCrearInspeccion && (
+              <Button asChild variante="primario">
+                <Link to="/inspecciones/nueva">
+                  <PlusIcon size={16} aria-hidden />
+                  Nueva inspección
+                </Link>
+              </Button>
+            )}
+          </>
+        }
+      />
 
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-3 border-r border-border/60 pr-4 text-xs font-mono">
-            <span className="text-emerald-400 font-bold">{metricas.aptas} Aptas</span>
-            <span>·</span>
-            <span className="text-amber-400 font-bold">{metricas.conObs} Con Observaciones</span>
-            <span>·</span>
-            <span className="text-destructive font-bold">{metricas.noAptas} No Aptas</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variante="secundario"
-              icono={FileTextIcon}
-              onClick={() => navigate('/inspecciones/plantillas')}
-              className="text-xs font-bold"
-            >
-              Plantillas
-            </Button>
-
-            <Button
-              variante="primario"
-              icono={PlusIcon}
-              onClick={() => navigate('/inspecciones/nueva')}
-              className="text-xs font-bold"
-            >
-              Nueva Inspección
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Barra de Filtros */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-card/30 p-4">
-        <div className="relative min-w-[240px] flex-1 max-w-md">
-          <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <input
-            type="text"
-            placeholder="Buscar por activo, código de reserva u observaciones..."
+      <div className="space-y-4">
+        {/* Barra de filtros */}
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between" data-entrada>
+          <Input
+            type="search"
+            icono={MagnifyingGlassIcon}
+            aria-label="Buscar inspecciones"
+            placeholder="Buscar por activo, reserva u observación…"
             value={busqueda}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBusqueda(e.target.value)}
-            className="h-9 w-full rounded-lg border border-border bg-background pl-9 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            onChange={(e: ChangeEvent<HTMLInputElement>) => fijarFiltro('q', e.target.value)}
+            className="w-full md:max-w-[22rem]"
           />
-          {busqueda && (
-            <button
-              type="button"
-              onClick={() => setBusqueda('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <XIcon className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
 
-        <div className="flex items-center gap-2">
-          <select
-            value={filtroMomento}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFiltroMomento(e.target.value)}
-            className="h-9 rounded-lg border border-border bg-background px-3 text-xs text-foreground focus:border-primary focus:outline-none"
-          >
-            <option value="todos">Todos los momentos</option>
-            <option value="salida">Salida (Despacho)</option>
-            <option value="devolucion">Devolución (Retorno)</option>
-          </select>
-
-          <select
-            value={filtroResultado}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFiltroResultado(e.target.value)}
-            className="h-9 rounded-lg border border-border bg-background px-3 text-xs text-foreground focus:border-primary focus:outline-none"
-          >
-            <option value="todos">Todos los resultados</option>
-            <option value="apto">Apto</option>
-            <option value="apto_con_observaciones">Apto con Obs.</option>
-            <option value="no_apto">No Apto</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Tabla de Inspecciones */}
-      <div className="flex-1 p-6">
-        {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-14 w-full rounded-xl" />
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            {hayFiltros && !isLoading && !error && (
+              <span className="tabular mr-1 text-[13px] text-ink-3" aria-live="polite">
+                {pluralizar(inspeccionesFiltradas.length, 'resultado')}
+              </span>
+            )}
+            <SegmentedControl
+              aria-label="Momento"
+              valor={filtroMomento}
+              onCambio={(v) => fijarFiltro('momento', v)}
+              opciones={MOMENTOS}
+            />
+            <Select
+              aria-label="Resultado"
+              valor={filtroResultado}
+              onCambio={(v) => fijarFiltro('resultado', v)}
+              opciones={RESULTADOS}
+              className="w-auto min-w-48"
+            />
           </div>
-        ) : error ? (
-          <ErrorState onReintentar={() => void refetch()} />
-        ) : inspeccionesFiltradas.length === 0 ? (
-          <EmptyState
-            icono={ShieldCheckIcon}
-            titulo="No se encontraron inspecciones"
-            descripcion="Realice un checklist de salida o devolución para los activos en contrato."
-          />
-        ) : (
-          <div className="overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur-md shadow-xs">
+        </div>
+
+        {/* Tabla de inspecciones */}
+        <section className="tarjeta overflow-hidden" aria-label="Lista de inspecciones" data-entrada>
+          {isLoading ? (
+            <div aria-busy="true">
+              <div className="flex h-10 items-center px-4">
+                <Skeleton className="h-3.5 w-48" />
+              </div>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex h-14 items-center gap-6 border-t border-line px-4">
+                  <div className="w-40 space-y-1.5">
+                    <Skeleton className="h-3.5 w-20" />
+                    <Skeleton className="h-3 w-32" />
+                  </div>
+                  <Skeleton className="hidden h-[22px] w-24 rounded-full md:block" />
+                  <Skeleton className="hidden h-3.5 w-28 lg:block" />
+                  <Skeleton className="hidden h-3.5 w-32 md:block" />
+                  <Skeleton className="hidden h-3.5 w-28 xl:block" />
+                  <Skeleton className="ml-auto h-[22px] w-28 rounded-full" />
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="p-5">
+              <ErrorState error={error} onReintentar={() => void refetch()} />
+            </div>
+          ) : inspeccionesFiltradas.length === 0 ? (
+            hayFiltros ? (
+              <EmptyState
+                icono={MagnifyingGlassIcon}
+                titulo="Ninguna inspección coincide"
+                descripcion="Pruebe con otro activo, otra reserva o quite los filtros."
+                accion={<Button onClick={() => setParametros({}, { replace: true })}>Quitar filtros</Button>}
+              />
+            ) : (
+              <EmptyState
+                icono={ClipboardTextIcon}
+                titulo="Aún no hay inspecciones"
+                descripcion="Realice un checklist de salida o devolución para los activos en contrato."
+              />
+            )
+          ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="border-b border-border bg-muted/30 font-bold uppercase tracking-wider text-muted-foreground">
+              <table className="w-full text-left text-sm">
+                <thead>
                   <tr>
-                    <th className="px-4 py-3">Momento</th>
-                    <th className="px-4 py-3">Activo</th>
-                    <th className="px-4 py-3">Reserva</th>
-                    <th className="px-4 py-3">Fecha y Hora</th>
-                    <th className="px-4 py-3">Lectura Medidor</th>
-                    <th className="px-4 py-3">Inspector</th>
-                    <th className="px-4 py-3">Veredicto</th>
-                    <th className="px-4 py-3 text-right">Acción</th>
+                    <th scope="col" className="th-tabla">
+                      Activo
+                    </th>
+                    <th scope="col" className="th-tabla hidden md:table-cell">
+                      Momento
+                    </th>
+                    <th scope="col" className="th-tabla hidden lg:table-cell">
+                      Reserva
+                    </th>
+                    <th scope="col" className="th-tabla hidden md:table-cell">
+                      Fecha
+                    </th>
+                    <th scope="col" className="th-tabla hidden text-right lg:table-cell">
+                      Lectura
+                    </th>
+                    <th scope="col" className="th-tabla hidden xl:table-cell">
+                      Inspector
+                    </th>
+                    <th scope="col" className="th-tabla">
+                      Resultado
+                    </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/40">
+                <tbody>
                   {inspeccionesFiltradas.map((ins) => {
                     const activo = mapaActivos.get(ins.activoId);
                     const reserva = ins.reservaId ? mapaReservas.get(ins.reservaId) : undefined;
                     const inspector = mapaUsuarios.get(ins.inspectorId);
+                    const fecha = formatear(ins.realizadaEn, 'America/Caracas', 'dd/MM/yyyy HH:mm');
 
                     return (
                       <tr
                         key={ins.id}
                         onClick={() => navigate(`/inspecciones/${ins.id}`)}
-                        className="cursor-pointer hover:bg-muted/20 transition-colors"
+                        className="fila-tabla h-12 cursor-pointer"
                       >
-                        <td className="px-4 py-3 font-bold uppercase">
-                          <span
-                            className={`rounded px-2 py-0.5 text-[10px] ${
-                              ins.momento === 'salida'
-                                ? 'bg-sky-500/15 text-sky-400'
-                                : 'bg-purple-500/15 text-purple-400'
-                            }`}
+                        <td className="px-4 py-2.5">
+                          {/* El enlace da acceso por teclado; el clic en la fila es un atajo para el puntero. */}
+                          <Link
+                            to={`/inspecciones/${ins.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="rounded font-mono font-medium text-ink hover:text-accent-fg"
                           >
-                            {ins.momento}
+                            {activo?.codigo ?? ins.activoId}
+                          </Link>
+                          {activo && (
+                            <span className="hidden truncate text-[13px] text-ink-3 md:block">
+                              {activo.marca} {activo.modelo}
+                            </span>
+                          )}
+                          <span className="block text-[13px] text-ink-3 md:hidden">
+                            {ETIQUETA_MOMENTO[ins.momento]}, <span className="tabular font-mono">{fecha}</span>
                           </span>
                         </td>
-                        <td className="px-4 py-3 font-mono font-bold text-foreground">
-                          {activo?.codigo ?? ins.activoId}
+                        <td className="hidden px-4 py-2.5 md:table-cell">
+                          <MomentoBadge momento={ins.momento} />
                         </td>
-                        <td className="px-4 py-3 font-mono text-muted-foreground">
-                          {reserva?.codigo ?? (ins.reservaId || '—')}
+                        <td className="hidden px-4 py-2.5 font-mono text-ink-2 lg:table-cell">
+                          {reserva?.codigo ?? ins.reservaId ?? <span className="font-sans text-ink-3">Sin reserva</span>}
                         </td>
-                        <td className="px-4 py-3 font-mono text-muted-foreground">
-                          {formatear(ins.realizadaEn, 'America/Caracas', 'dd/MM/yyyy HH:mm')}
+                        <td className="tabular hidden whitespace-nowrap px-4 py-2.5 font-mono text-ink-2 md:table-cell">
+                          {fecha}
                         </td>
-                        <td className="px-4 py-3 font-mono text-foreground">
-                          {ins.lectura}
+                        <td className="tabular hidden px-4 py-2.5 text-right font-mono text-ink lg:table-cell">
+                          {formatearNumero(ins.lectura)}
                         </td>
-                        <td className="px-4 py-3 text-muted-foreground">
+                        <td className="hidden px-4 py-2.5 text-ink-2 xl:table-cell">
                           {inspector?.nombre ?? ins.inspectorId}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-2.5">
                           <ResultadoInspeccionBadge resultado={ins.resultado} />
-                        </td>
-                        <td
-                          className="px-4 py-3 text-right"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Button
-                            variante="fantasma"
-                            tamano="sm"
-                            onClick={() => navigate(`/inspecciones/${ins.id}`)}
-                          >
-                            Ver Acta
-                          </Button>
                         </td>
                       </tr>
                     );
@@ -243,8 +279,8 @@ export default function InspeccionesPage() {
                 </tbody>
               </table>
             </div>
-          </div>
-        )}
+          )}
+        </section>
       </div>
     </div>
   );
