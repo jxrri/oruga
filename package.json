@@ -16,7 +16,9 @@
     "test:watch": "vitest",
     "test:tz": "cross-env TZ=America/Caracas vitest run src/shared src/domain && cross-env TZ=Asia/Tokyo vitest run src/shared src/domain",
     "test:coverage": "vitest run --coverage",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "manual": "node scripts/user-manual/capture.mjs && node scripts/user-manual/build-pdf.mjs",
+    "manual:pdf": "node scripts/user-manual/build-pdf.mjs"
   },
   "msw": {
     "workerDirectory": [

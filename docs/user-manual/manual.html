@@ -1,0 +1,2492 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Oruga · Manual de usuario</title>
+    <meta
+      name="description"
+      content="Manual de usuario de Oruga, sistema de gestión y alquiler de flotas y maquinaria pesada."
+    />
+    <link rel="stylesheet" href="manual.css" />
+  </head>
+  <body>
+    <!-- Portada -->
+    <section class="cover">
+      <div class="stripe"></div>
+      <div class="brand">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="8" fill="#1a1d23" />
+          <rect x="6" y="18" width="20" height="6" rx="3" fill="none" stroke="#FFC21A" stroke-width="2.5" />
+          <circle cx="10" cy="21" r="1.4" fill="#FFC21A" />
+          <circle cx="16" cy="21" r="1.4" fill="#FFC21A" />
+          <circle cx="22" cy="21" r="1.4" fill="#FFC21A" />
+          <path
+            d="M9 15 L14 8 L22 8"
+            fill="none"
+            stroke="#FFC21A"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        Oruga
+      </div>
+      <div class="kicker">Manual de usuario</div>
+      <h1>Toda la flota en una <span>sola línea de tiempo.</span></h1>
+      <p class="lead">
+        Guía completa para planificar reservas, inspeccionar equipos, programar mantenimiento y seguir la
+        flota de vehículos y maquinaria pesada en Maracaibo, Caracas, Valencia y Cúcuta.
+      </p>
+      <div class="meta">
+        <div>Versión<b>0.1.0 · Fase 1</b></div>
+        <div>Fecha<b>Noviembre de 2026</b></div>
+        <div>Módulos<b>8 + administración</b></div>
+      </div>
+      <div class="shot"><img src="screenshots/dashboard-dark.png" alt="" /></div>
+    </section>
+
+    <!-- Índice: lo completa el script del final; build-pdf.mjs rellena los números de página -->
+    <section class="toc-page">
+      <h1>Contenido</h1>
+      <nav class="toc"><ol id="toc-list"></ol></nav>
+    </section>
+
+    <!-- 1. Introducción -->
+    <section class="chapter" id="introduccion">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Introducción</h2>
+        <p class="intro">Qué es Oruga, a quién está dirigido este manual y qué necesitas para empezar.</p>
+      </header>
+
+      <h3 id="que-es-oruga">¿Qué es Oruga?</h3>
+      <p>
+        Oruga es un sistema web para empresas que alquilan vehículos y maquinaria pesada. Reúne en un solo
+        lugar todo el ciclo de un alquiler: el registro de la flota y de los clientes, la reserva y su
+        cotización, la inspección del equipo al salir y al volver del patio, el mantenimiento preventivo y
+        correctivo, y el seguimiento de la ubicación de cada unidad.
+      </p>
+      <p>La aplicación se organiza en ocho módulos operativos y un módulo de administración:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Módulo</th>
+            <th>Para qué sirve</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Tablero</strong></td>
+            <td>Indicadores del negocio, alertas que piden una decisión y operaciones del día.</td>
+          </tr>
+          <tr>
+            <td><strong>Planificador</strong></td>
+            <td>Calendario de toda la flota: crear, mover y reasignar reservas arrastrándolas.</td>
+          </tr>
+          <tr>
+            <td><strong>Reservas</strong></td>
+            <td>Contratos de alquiler: cotización con tarifa óptima, estados y bitácora de cambios.</td>
+          </tr>
+          <tr>
+            <td><strong>Inventario</strong></td>
+            <td>Catálogo de activos, ficha técnica, documentos y estado operativo.</td>
+          </tr>
+          <tr>
+            <td><strong>Inspecciones</strong></td>
+            <td>Actas de salida, devolución y rutina con veredicto automático y comparación.</td>
+          </tr>
+          <tr>
+            <td><strong>Mantenimiento</strong></td>
+            <td>Órdenes de taller y planes preventivos por horas, kilómetros o días.</td>
+          </tr>
+          <tr>
+            <td><strong>Clientes</strong></td>
+            <td>Directorio de empresas y personas, bloqueo administrativo e historial.</td>
+          </tr>
+          <tr>
+            <td><strong>Ubicación</strong></td>
+            <td>Mapa con la posición de cada activo en tiempo real y alertas de geocerca.</td>
+          </tr>
+          <tr>
+            <td><strong>Plantillas</strong></td>
+            <td>Administración de los formularios de inspección (solo administradores y gerencia).</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 id="sobre-este-manual">Sobre este manual</h3>
+      <p>
+        El manual está pensado para todas las personas que usan Oruga en el día a día: administración,
+        planificación, inspección de patio, jefatura de mantenimiento y gerencia. El capítulo
+        <a href="#roles">Roles y permisos</a>
+        indica qué partes aplican a cada rol.
+      </p>
+      <p>Para leerlo con facilidad se usan estas convenciones:</p>
+      <ul>
+        <li>Los botones y opciones de la pantalla aparecen así: <span class="ui">Nueva reserva</span>.</li>
+        <li>
+          Las rutas de navegación se escriben con flechas:
+          <span class="path">Inventario › Ficha técnica</span>.
+        </li>
+        <li>
+          Los números <span class="badge">1</span> sobre las capturas se explican en la lista que sigue a cada
+          figura.
+        </li>
+        <li>Las teclas aparecen así: <kbd>Ctrl</kbd> + <kbd>Z</kbd>.</li>
+      </ul>
+      <div class="callout">
+        <span class="title">Datos de las capturas</span>
+        Todas las capturas se tomaron de la aplicación real con un juego de datos de demostración: 120
+        activos, 60 clientes y más de 400 reservas. Los nombres, documentos y montos son ficticios.
+      </div>
+
+      <h3 id="requisitos">Requisitos y acceso</h3>
+      <ul>
+        <li>Un navegador actualizado: Chrome, Edge, Firefox, Brave o Safari.</li>
+        <li>
+          Una pantalla de 1280 píxeles de ancho o más para trabajar con comodidad. Oruga también funciona en
+          tabletas y teléfonos.
+        </li>
+        <li>Conexión a Internet para ver los mapas del módulo Ubicación.</li>
+      </ul>
+      <p>
+        En esta fase, Oruga se ejecuta en el propio equipo. Con Node.js 20 o superior instalado, abre una
+        terminal en la carpeta del proyecto y ejecuta <code>npm install</code> y luego
+        <code>npm run dev</code>. Después abre en el navegador la dirección que indica la terminal,
+        normalmente <code>http://localhost:5173</code>.
+      </p>
+      <div class="callout warn">
+        <span class="title">Abre la aplicación desde localhost o con HTTPS</span>
+        La protección de las claves usa funciones criptográficas que el navegador solo habilita en
+        <code>localhost</code> y en sitios seguros (HTTPS). Desde otra dirección no podrás iniciar sesión.
+      </div>
+
+      <h3 id="donde-se-guardan-los-datos">Dónde se guardan los datos</h3>
+      <p>
+        La fase 1 de Oruga no tiene un servidor central: la información se guarda en una base de datos local
+        del navegador (IndexedDB). Esto tiene tres consecuencias prácticas:
+      </p>
+      <ul>
+        <li>
+          <strong>La base arranca vacía.</strong> Solo vienen precargados los catálogos: las cuatro sedes, las
+          categorías de equipos, las plantillas de inspección, los planes de mantenimiento y las cinco cuentas
+          de demostración. Los activos, clientes, reservas, inspecciones y órdenes los registras tú.
+        </li>
+        <li>
+          <strong>Los datos viven en ese navegador.</strong> Si abres Oruga en otro equipo, en otro navegador
+          o en una ventana privada, verás otra base distinta.
+        </li>
+        <li>
+          <strong>Borrar los datos del sitio borra la base.</strong> Si limpias el historial con los datos de
+          sitios, o usas <span class="ui">Vaciar base de datos</span> en el
+          <a href="#panel-de-desarrollo">panel de desarrollo</a>, la información se pierde. Las cuentas de
+          demostración se vuelven a crear solas.
+        </li>
+      </ul>
+      <div class="callout tip">
+        <span class="title">El reloj de la demostración</span>
+        Oruga funciona con un reloj propio que empieza el
+        <strong>lunes 2 de noviembre de 2026 a las 09:30</strong>
+        (hora de Maracaibo) cada vez que abres la aplicación y avanza en tiempo real. Las fechas de "hoy", los
+        vencimientos y las operaciones del día se calculan con ese reloj, que siempre ves en la cabecera.
+      </div>
+    </section>
+
+    <!-- 2. Primeros pasos -->
+    <section class="chapter" id="primeros-pasos">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Primeros pasos</h2>
+        <p class="intro">Cómo entrar a Oruga, crear tu cuenta y cerrar la sesión.</p>
+      </header>
+
+      <h3 id="iniciar-sesion">Iniciar sesión</h3>
+      <p>
+        Al abrir Oruga aparece la pantalla de acceso. A la izquierda está el formulario y, debajo, la lista de
+        cuentas de demostración. A la derecha, una escena animada con la flota.
+      </p>
+      <figure>
+        <div class="frame"><img src="screenshots/login.png" alt="Pantalla de inicio de sesión" /></div>
+        <figcaption>Pantalla de acceso con las cuentas de demostración.</figcaption>
+      </figure>
+      <ol class="steps">
+        <li>Escribe tu correo en <strong>Correo</strong>.</li>
+        <li>
+          Escribe tu clave en <strong>Clave</strong>. El ícono del ojo la muestra u oculta mientras escribes.
+        </li>
+        <li>
+          Pulsa <span class="ui primary">Entrar</span>. Oruga te lleva al primer módulo que tu rol puede abrir
+          y te saluda con un mensaje.
+        </li>
+      </ol>
+      <p>
+        Si el correo o la clave no coinciden, el formulario muestra <em>"Correo o clave incorrectos."</em> y
+        no se borra lo que escribiste, para que puedas corregirlo.
+      </p>
+      <figure class="medium">
+        <div class="frame"><img src="screenshots/login-error.png" alt="Error de credenciales" /></div>
+        <figcaption>Mensaje cuando el correo o la clave no son válidos.</figcaption>
+      </figure>
+
+      <h3 id="cuentas-de-demostracion">Cuentas de demostración</h3>
+      <p>
+        Oruga incluye una cuenta por cada rol. Al pulsar una tarjeta de la lista
+        <strong>Cuentas de demostración</strong> se rellenan el correo y la clave; después solo tienes que
+        pulsar <span class="ui primary">Entrar</span>. Todas usan la clave <code>oruga2026</code>.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Persona</th>
+            <th>Rol</th>
+            <th>Sede</th>
+            <th>Correo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Mariana Urdaneta</td>
+            <td>Administrador</td>
+            <td>Maracaibo</td>
+            <td class="mono">mariana.urdaneta@oruga.com.ve</td>
+          </tr>
+          <tr>
+            <td>Luis Alberto Ferrer</td>
+            <td>Planificador</td>
+            <td>Maracaibo</td>
+            <td class="mono">luis.ferrer@oruga.com.ve</td>
+          </tr>
+          <tr>
+            <td>José Gregorio Morillo</td>
+            <td>Inspector de patio</td>
+            <td>Maracaibo</td>
+            <td class="mono">jose.morillo@oruga.com.ve</td>
+          </tr>
+          <tr>
+            <td>Carlos Briceño</td>
+            <td>Jefe de mantenimiento</td>
+            <td>Maracaibo</td>
+            <td class="mono">carlos.briceno@oruga.com.ve</td>
+          </tr>
+          <tr>
+            <td>Andreína Colmenares</td>
+            <td>Gerente</td>
+            <td>Caracas</td>
+            <td class="mono">andreina.colmenares@oruga.com.ve</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 id="crear-una-cuenta">Crear una cuenta</h3>
+      <p>
+        Desde la pantalla de acceso, pulsa <strong>Crea tu cuenta</strong>. El formulario de registro pide:
+      </p>
+      <ul>
+        <li><strong>Nombre y apellido.</strong></li>
+        <li><strong>Correo</strong>, que no puede estar registrado antes.</li>
+        <li><strong>Clave</strong>, de al menos 8 caracteres.</li>
+        <li><strong>Rol</strong>, que define lo que verás en la aplicación (por defecto, Planificador).</li>
+        <li><strong>Sede</strong> donde trabajas.</li>
+      </ul>
+      <p>
+        Al pulsar <span class="ui primary">Crear cuenta y entrar</span>, Oruga crea la cuenta e inicia la
+        sesión de inmediato. Si falta algún dato verás el aviso junto al campo, por ejemplo
+        <em>"La clave debe tener al menos 8 caracteres."</em>
+      </p>
+      <figure>
+        <div class="frame"><img src="screenshots/register.png" alt="Pantalla de registro" /></div>
+        <figcaption>Registro de una cuenta nueva.</figcaption>
+      </figure>
+      <div class="callout">
+        <span class="title">Tu clave está protegida</span>
+        Oruga no guarda la clave tal como la escribes: guarda una huella cifrada (hash) que no se puede
+        revertir. Aun así, las cuentas se guardan en el navegador, así que protege el acceso al equipo.
+      </div>
+
+      <h3 id="volver-a-donde-estabas">Volver a donde estabas</h3>
+      <p>
+        Si abres un enlace de Oruga sin haber iniciado sesión, por ejemplo la ficha de una reserva que te
+        enviaron, la aplicación te pide entrar primero y luego te lleva directamente a esa página. Lo mismo
+        ocurre si la sesión deja de ser válida mientras trabajas.
+      </p>
+
+      <h3 id="uso-en-el-telefono">Uso en el teléfono y la tableta</h3>
+      <div class="figrow">
+        <div style="flex: 1.25">
+          <p>
+            Oruga se adapta a pantallas pequeñas. En anchos menores a 1024 píxeles, el menú lateral se oculta
+            y se abre con el botón <span class="ui">Abrir menú</span> de la cabecera.
+          </p>
+          <p>
+            Para tareas de patio, como las inspecciones, el teléfono es suficiente. Para el Planificador y el
+            mapa se recomienda una pantalla más grande.
+          </p>
+        </div>
+        <figure class="tall" style="flex: 1">
+          <div class="frame">
+            <img src="screenshots/login-mobile.png" alt="Acceso en un teléfono" style="max-height: 120mm" />
+          </div>
+          <figcaption>Acceso desde un teléfono.</figcaption>
+        </figure>
+      </div>
+
+      <h3 id="cerrar-sesion">Cerrar sesión</h3>
+      <p>
+        Pulsa tu nombre en la esquina superior derecha. El menú de la cuenta muestra tu nombre, correo, rol y
+        sede. Elige <span class="ui">Cerrar sesión</span> para salir.
+      </p>
+      <figure class="small">
+        <div class="frame"><img src="screenshots/account-menu.png" alt="Menú de la cuenta" /></div>
+        <figcaption>Menú de la cuenta con la opción para cerrar la sesión.</figcaption>
+      </figure>
+    </section>
+
+    <!-- 3. La interfaz -->
+    <section class="chapter" id="interfaz">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>La interfaz</h2>
+        <p class="intro">Las piezas que se repiten en todas las pantallas y cómo ajustarlas a tu gusto.</p>
+      </header>
+
+      <h3 id="vista-general">Vista general</h3>
+      <p>
+        Todas las pantallas comparten la misma estructura: un menú lateral a la izquierda, una cabecera arriba
+        y el contenido del módulo en el centro.
+      </p>
+      <figure>
+        <div class="frame">
+          <img src="screenshots/app-shell.png" alt="Estructura general de la aplicación" />
+        </div>
+        <figcaption>Estructura común de la aplicación.</figcaption>
+      </figure>
+      <ol class="marks">
+        <li>
+          <span class="badge">1</span><strong>Menú de módulos.</strong> Solo muestra los módulos que tu rol
+          puede abrir.
+        </li>
+        <li>
+          <span class="badge">2</span><strong>Módulo actual.</strong> Nombre e ícono de la pantalla en la que
+          estás.
+        </li>
+        <li>
+          <span class="badge">3</span><strong>Reloj.</strong> Fecha y hora de la demostración, zona horaria y
+          ciudad.
+        </li>
+        <li>
+          <span class="badge">4</span><strong>Estado en vivo.</strong> Indica si llegan las actualizaciones en
+          tiempo real.
+        </li>
+        <li>
+          <span class="badge">5</span><strong>Bs.</strong> Muestra u oculta el equivalente de los montos en
+          bolívares.
+        </li>
+        <li>
+          <span class="badge">6</span><strong>Tema.</strong> Cambia entre tema claro, oscuro o el del sistema.
+        </li>
+        <li>
+          <span class="badge">7</span><strong>Panel de desarrollo.</strong> Herramientas para pruebas (ver
+          capítulo 15).
+        </li>
+        <li>
+          <span class="badge">8</span><strong>Cuenta.</strong> Tu nombre y rol; desde aquí cierras la sesión.
+        </li>
+        <li>
+          <span class="badge">9</span><strong>Créditos de imágenes.</strong> Autores y licencias de las
+          fotografías.
+        </li>
+        <li>
+          <span class="badge">10</span><strong>Contraer menú.</strong> Reduce el menú lateral a solo íconos.
+        </li>
+      </ol>
+
+      <h3 id="menu-lateral">Menú lateral</h3>
+      <p>
+        Los módulos se agrupan en tres bloques separados por una línea: la operación comercial (Tablero,
+        Planificador, Reservas e Inventario), el trabajo de patio (Inspecciones, Mantenimiento, Clientes y
+        Ubicación) y la administración (Plantillas). El módulo activo aparece resaltado en azul.
+      </p>
+      <p>
+        El botón <span class="ui">Contraer menú</span>, al pie del menú, deja solo los íconos para ganar
+        espacio; vuelve a pulsarlo (<span class="ui">Expandir menú</span>) para ver los nombres. Oruga
+        recuerda tu preferencia.
+      </p>
+
+      <h3 id="reloj-y-tiempo-real">Reloj y estado en tiempo real</h3>
+      <p>
+        El reloj de la cabecera muestra la fecha y hora de la demostración con la zona horaria (UTC−4) y la
+        ciudad de tu sede. A su lado, una píldora indica el estado de las actualizaciones en vivo:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Estado</th>
+            <th>Significado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag ok">En vivo</span></td>
+            <td>
+              Llegan los cambios en tiempo real: posiciones del mapa cada 4 segundos y ajustes de reservas.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="tag neutral">Pausado</span></td>
+            <td>Las actualizaciones están detenidas. Los datos se refrescan al volver a consultar.</td>
+          </tr>
+          <tr>
+            <td><span class="tag danger">Sin señal</span></td>
+            <td>Se perdió la conexión con el servicio de eventos.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 id="montos-en-bolivares">Montos en bolívares</h3>
+      <p>
+        Los precios y montos se expresan en dólares (USD). El botón <span class="ui">Bs</span> de la cabecera
+        agrega junto a cada monto su equivalente en bolívares, calculado con la tasa de cambio configurada. En
+        esta versión la tasa es una referencia simulada del BCV. Vuelve a pulsarlo para ocultar los bolívares.
+      </p>
+
+      <h3 id="tema-claro-y-oscuro">Tema claro y oscuro</h3>
+      <p>
+        El botón con el ícono del sol abre el menú <strong>Tema</strong> con tres opciones:
+        <strong>Según el sistema</strong> (sigue la configuración del equipo), <strong>Oscuro</strong> y
+        <strong>Claro</strong>. La elección se guarda para la próxima vez.
+      </p>
+      <div class="figrow">
+        <figure style="flex: 0.8">
+          <div class="frame"><img src="screenshots/theme-menu.png" alt="Menú de tema" /></div>
+          <figcaption>Menú para elegir el tema.</figcaption>
+        </figure>
+        <figure>
+          <div class="frame"><img src="screenshots/dashboard-dark.png" alt="Tablero en tema oscuro" /></div>
+          <figcaption>El Tablero con el tema oscuro.</figcaption>
+        </figure>
+      </div>
+
+      <h3 id="mensajes-y-cargas">Mensajes, cargas y errores</h3>
+      <ul>
+        <li>
+          <strong>Avisos emergentes.</strong> Las confirmaciones ("Reserva creada", "Reserva reprogramada") y
+          los errores aparecen unos segundos en la esquina inferior derecha.
+        </li>
+        <li>
+          <strong>Cargas.</strong> Mientras llegan los datos verás bloques grises animados con la forma del
+          contenido.
+        </li>
+        <li>
+          <strong>Errores aislados.</strong> Si un módulo falla, solo ese módulo muestra el error; el resto de
+          la aplicación sigue funcionando.
+        </li>
+        <li>
+          <strong>Confirmaciones.</strong> Las acciones que cambian datos importantes (cancelar una reserva,
+          cambiar el estado de un activo) piden un motivo antes de aplicarse.
+        </li>
+      </ul>
+
+      <h3 id="atajos-de-teclado">Atajos de teclado</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Teclas</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><kbd>Tab</kbd> al cargar la página</td>
+            <td>Muestra el enlace <strong>Saltar al contenido</strong> para ir directo al módulo.</td>
+          </tr>
+          <tr>
+            <td><kbd>Ctrl</kbd> + <kbd>Z</kbd> (<kbd>⌘</kbd> + <kbd>Z</kbd> en Mac)</td>
+            <td>En el Planificador, deshace el último movimiento de una reserva.</td>
+          </tr>
+          <tr>
+            <td><kbd>Enter</kbd> o <kbd>Espacio</kbd></td>
+            <td>Abre la fila o la reserva seleccionada en el Planificador.</td>
+          </tr>
+          <tr>
+            <td><kbd>Esc</kbd></td>
+            <td>Cierra diálogos, menús y paneles laterales.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 4. Roles -->
+    <section class="chapter" id="roles">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Roles y permisos</h2>
+        <p class="intro">Cada cuenta tiene un rol que decide qué módulos ves y qué acciones puedes hacer.</p>
+      </header>
+
+      <h3 id="los-cinco-roles">Los cinco roles</h3>
+      <ul>
+        <li>
+          <strong>Administrador.</strong> Acceso completo a todos los módulos y acciones, incluida la edición
+          de plantillas.
+        </li>
+        <li>
+          <strong>Planificador.</strong> Gestiona reservas de principio a fin y registra o edita clientes.
+          Consulta el resto.
+        </li>
+        <li>
+          <strong>Inspector de patio.</strong> Realiza inspecciones y entrega o recibe los equipos en el
+          patio. Al entrar, va directo al Planificador.
+        </li>
+        <li>
+          <strong>Jefe de mantenimiento.</strong> Gestiona las órdenes de taller y los planes preventivos, y
+          cambia el estado operativo de los activos.
+        </li>
+        <li>
+          <strong>Gerente.</strong> Consulta toda la información, incluidas las plantillas, sin modificar
+          nada.
+        </li>
+      </ul>
+
+      <h3 id="matriz-de-permisos">Matriz de permisos</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Módulo</th>
+            <th class="center">Administrador</th>
+            <th class="center">Planificador</th>
+            <th class="center">Inspector</th>
+            <th class="center">Mantenimiento</th>
+            <th class="center">Gerente</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Tablero</td>
+            <td class="center yes">Total</td>
+            <td class="center">Ver</td>
+            <td class="center no">—</td>
+            <td class="center">Ver</td>
+            <td class="center">Ver</td>
+          </tr>
+          <tr>
+            <td>Planificador y Reservas</td>
+            <td class="center yes">Total</td>
+            <td class="center yes">Total</td>
+            <td class="center part">Ver, entregar y recibir</td>
+            <td class="center">Ver</td>
+            <td class="center">Ver</td>
+          </tr>
+          <tr>
+            <td>Inventario</td>
+            <td class="center yes">Total</td>
+            <td class="center">Ver</td>
+            <td class="center">Ver</td>
+            <td class="center part">Ver y cambiar estado</td>
+            <td class="center">Ver</td>
+          </tr>
+          <tr>
+            <td>Inspecciones</td>
+            <td class="center yes">Total</td>
+            <td class="center">Ver</td>
+            <td class="center part">Ver y crear</td>
+            <td class="center">Ver</td>
+            <td class="center">Ver</td>
+          </tr>
+          <tr>
+            <td>Mantenimiento</td>
+            <td class="center yes">Total</td>
+            <td class="center">Ver</td>
+            <td class="center">Ver</td>
+            <td class="center yes">Total</td>
+            <td class="center">Ver</td>
+          </tr>
+          <tr>
+            <td>Clientes</td>
+            <td class="center yes">Total</td>
+            <td class="center part">Ver, crear y editar</td>
+            <td class="center">Ver</td>
+            <td class="center no">—</td>
+            <td class="center">Ver</td>
+          </tr>
+          <tr>
+            <td>Ubicación</td>
+            <td class="center yes">Total</td>
+            <td class="center">Ver</td>
+            <td class="center">Ver</td>
+            <td class="center">Ver</td>
+            <td class="center">Ver</td>
+          </tr>
+          <tr>
+            <td>Plantillas</td>
+            <td class="center yes">Total</td>
+            <td class="center no">—</td>
+            <td class="center no">—</td>
+            <td class="center no">—</td>
+            <td class="center">Ver</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 id="como-se-ven-los-permisos">Cómo se reflejan los permisos</h3>
+      <p>
+        Oruga <strong>oculta</strong> lo que tu rol no puede usar, en lugar de mostrarlo deshabilitado. Por
+        eso el menú lateral cambia según la cuenta:
+      </p>
+      <div class="sidebars keep">
+        <div><img src="screenshots/sidebar-admin.png" alt="" />Administrador</div>
+        <div><img src="screenshots/sidebar-planner.png" alt="" />Planificador</div>
+        <div><img src="screenshots/sidebar-inspector.png" alt="" />Inspector</div>
+        <div><img src="screenshots/sidebar-maintenance.png" alt="" />Mantenimiento</div>
+        <div><img src="screenshots/sidebar-manager.png" alt="" />Gerente</div>
+      </div>
+      <p style="margin-top: 4mm">
+        Del mismo modo, los botones de acción (por ejemplo <span class="ui">Nuevo activo</span> o
+        <span class="ui">Nueva reserva</span>) solo aparecen para los roles que pueden usarlos, y en el
+        Planificador las barras solo se pueden arrastrar si tu rol puede mover reservas.
+      </p>
+      <p>
+        Si abres directamente la dirección de un módulo que tu rol no puede ver, Oruga muestra el aviso
+        <em>"Tu rol no tiene acceso a este módulo"</em>, explica qué roles sí pueden abrirlo y ofrece el botón
+        <span class="ui primary">Ir a mi inicio</span>.
+      </p>
+      <figure>
+        <div class="frame"><img src="screenshots/forbidden.png" alt="Aviso de acceso denegado" /></div>
+        <figcaption>El inspector de patio intenta abrir el Tablero.</figcaption>
+      </figure>
+      <div class="callout">
+        Si intentas una acción que tu rol no permite, el sistema la rechaza y muestra un mensaje de error.
+        Nada se modifica.
+      </div>
+    </section>
+
+    <!-- 5. Recorrido -->
+    <section class="chapter" id="recorrido">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Recorrido: de la reserva a la devolución</h2>
+        <p class="intro">
+          El ciclo completo de un alquiler en Oruga, paso a paso, con el módulo donde ocurre cada parte.
+        </p>
+      </header>
+
+      <h3 id="el-ciclo-de-un-alquiler">El ciclo de un alquiler</h3>
+      <div class="flow">
+        <div class="node"><b>Preparar</b>Activos y clientes registrados</div>
+        <div class="arrow">→</div>
+        <div class="node accent"><b>Reservar</b>Borrador con tarifa óptima</div>
+        <div class="arrow">→</div>
+        <div class="node accent"><b>Confirmar</b>Sin conflictos bloqueantes</div>
+        <div class="arrow">→</div>
+        <div class="node"><b>Salida</b>Inspección y despacho</div>
+        <div class="arrow">→</div>
+        <div class="node"><b>Devolución</b>Inspección y cierre</div>
+        <div class="arrow">→</div>
+        <div class="node"><b>Comparar</b>Daños nuevos y taller</div>
+      </div>
+      <ol class="journey">
+        <li>
+          <b>Registra el equipo</b
+          ><span class="who"
+            >Administrador · <a href="#registrar-un-activo">Inventario › Nuevo activo</a></span
+          >
+        </li>
+        <li>
+          <b>Registra al cliente</b
+          ><span class="who"
+            >Administrador o planificador · <a href="#registrar-un-cliente">Clientes › Nuevo cliente</a></span
+          >
+        </li>
+        <li>
+          <b>Crea la reserva</b> con cliente, fechas y equipo; Oruga cotiza la tarifa óptima y avisa si hay
+          conflictos. Se guarda como borrador.<span class="who"
+            >Planificador · <a href="#crear-una-reserva">Reservas › Nueva reserva</a> o
+            <a href="#reserva-rapida">Planificador</a></span
+          >
+        </li>
+        <li>
+          <b>Confirma la reserva</b> cuando el cliente la acepte.<span class="who"
+            >Planificador · <a href="#ciclo-de-vida">Ficha de la reserva › Confirmar reserva</a></span
+          >
+        </li>
+        <li>
+          <b>Inspecciona el equipo antes de la salida.</b> El acta debe ser apta o apta con
+          observaciones.<span class="who"
+            >Inspector de patio · <a href="#realizar-una-inspeccion">Inspecciones</a></span
+          >
+        </li>
+        <li>
+          <b>Despacha el equipo.</b> La reserva pasa a "En curso".<span class="who"
+            >Inspector o planificador · <a href="#ciclo-de-vida">Ficha de la reserva › Despachar</a></span
+          >
+        </li>
+        <li>
+          <b>Sigue el equipo en el mapa</b> mientras está en la obra.<span class="who"
+            >Cualquier rol · <a href="#ubicacion">Ubicación</a></span
+          >
+        </li>
+        <li>
+          <b>Inspecciona el equipo al volver.</b
+          ><span class="who">Inspector de patio · <a href="#realizar-una-inspeccion">Inspecciones</a></span>
+        </li>
+        <li>
+          <b>Registra la devolución.</b> La reserva pasa a "Finalizada".<span class="who"
+            >Inspector o planificador ·
+            <a href="#ciclo-de-vida">Ficha de la reserva › Registrar devolución</a></span
+          >
+        </li>
+        <li>
+          <b>Compara la salida y la devolución</b> para detectar daños nuevos y, si hace falta, programa una
+          orden de taller.<span class="who"
+            >Inspector y jefe de mantenimiento · <a href="#comparar-inspecciones">Comparación</a> y
+            <a href="#programar-una-orden">Mantenimiento</a></span
+          >
+        </li>
+      </ol>
+      <div class="callout tip">
+        <span class="title">Atajo desde el Tablero</span>
+        La tarjeta <strong>Operaciones de hoy</strong> del Tablero lista las entregas y recepciones del día
+        con un botón <span class="ui">Inspeccionar</span> que abre directamente el formulario correcto.
+      </div>
+    </section>
+
+    <!-- 6. Tablero -->
+    <section class="chapter" id="tablero">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Tablero</h2>
+        <p class="intro">
+          La visión del negocio en una pantalla: indicadores, analítica, alertas y la operación del día.
+        </p>
+      </header>
+
+      <h3 id="indicadores-principales">Indicadores principales</h3>
+      <p>
+        Al entrar, el Tablero te saluda por tu nombre y muestra accesos rápidos y cuatro indicadores con su
+        tendencia de los últimos 14 días.
+      </p>
+      <figure>
+        <div class="frame"><img src="screenshots/dashboard.png" alt="Tablero" /></div>
+        <figcaption>Tablero de un administrador.</figcaption>
+      </figure>
+      <ol class="marks">
+        <li><span class="badge">1</span><strong>Mapa de flota.</strong> Abre el módulo Ubicación.</li>
+        <li><span class="badge">2</span><strong>Planificador.</strong> Abre el calendario de la flota.</li>
+        <li><span class="badge">3</span><strong>Nueva reserva.</strong> Abre el formulario de reserva.</li>
+        <li>
+          <span class="badge">4</span><strong>En alquiler.</strong> Activos alquilados y disponibles en patio.
+          Lleva al Inventario.
+        </li>
+        <li>
+          <span class="badge">5</span><strong>Facturación del mes.</strong> Proyección de ingresos del mes en
+          curso.
+        </li>
+        <li>
+          <span class="badge">6</span><strong>Servicios vencidos.</strong> Mantenimientos vencidos y por
+          vencer. Lleva a Mantenimiento.
+        </li>
+        <li>
+          <span class="badge">7</span><strong>Conflictos abiertos.</strong> Solapes o reservas sobre activos
+          no operativos. Lleva al Planificador.
+        </li>
+      </ol>
+
+      <h3 id="analitica-de-la-flota">Analítica de la flota</h3>
+      <p>
+        Tres anillos resumen la salud de la flota y un gráfico de barras muestra el monto estimado por mes de
+        inicio de las reservas, separado por estado (finalizadas, en curso, confirmadas y borradores).
+      </p>
+      <figure>
+        <div class="frame"><img src="screenshots/dashboard-analytics.png" alt="Analítica de la flota" /></div>
+        <figcaption>Utilización, flota operativa, mantenimiento al día y monto por mes.</figcaption>
+      </figure>
+      <ul>
+        <li>
+          <strong>Utilización, 30 días:</strong> horas reservadas sobre horas disponibles del último mes.
+        </li>
+        <li>
+          <strong>Flota operativa:</strong> activos en condiciones de trabajar sobre el total que no está de
+          baja.
+        </li>
+        <li><strong>Mantenimiento al día:</strong> activos sin servicios vencidos.</li>
+      </ul>
+
+      <h3 id="estado-y-ocupacion">Estado de la flota y ocupación</h3>
+      <div class="figrow">
+        <figure>
+          <div class="frame">
+            <img src="screenshots/dashboard-fleet-status.png" alt="Estado de la flota" />
+          </div>
+          <figcaption>Activos por estado en este momento.</figcaption>
+        </figure>
+        <figure>
+          <div class="frame">
+            <img src="screenshots/dashboard-occupancy.png" alt="Ocupación por categoría" />
+          </div>
+          <figcaption>Las seis categorías más ocupadas.</figcaption>
+        </figure>
+      </div>
+      <p>
+        <strong>Estado de la flota</strong> reparte los activos entre Disponible, En alquiler, Próxima salida,
+        En mantenimiento, Fuera de servicio y De baja; el enlace <span class="ui">Ver inventario</span> abre
+        el catálogo. <strong>Ocupación por categoría</strong> compara las horas reservadas con las disponibles
+        en los últimos 30 días.
+      </p>
+
+      <h3 id="alertas-accionables">Alertas accionables</h3>
+      <p>
+        Esta tarjeta reúne lo que necesita una decisión. Los filtros <strong>Todas</strong>,
+        <strong>Conflictos</strong>, <strong>Mantenimiento</strong>, <strong>Documentación</strong> y
+        <strong>Clientes</strong> muestran cuántas alertas hay de cada tipo. Cada alerta indica su gravedad y
+        trae un botón para resolverla:
+      </p>
+      <figure class="medium">
+        <div class="frame"><img src="screenshots/dashboard-alerts.png" alt="Alertas accionables" /></div>
+        <figcaption>Alertas con su gravedad y la acción sugerida.</figcaption>
+      </figure>
+      <table>
+        <thead>
+          <tr>
+            <th>Gravedad</th>
+            <th>Significado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag danger">Bloqueante</span></td>
+            <td>Impide confirmar o despachar una reserva hasta resolverla.</td>
+          </tr>
+          <tr>
+            <td><span class="tag warn">Advertencia</span></td>
+            <td>Conviene revisarla, pero no impide operar.</td>
+          </tr>
+          <tr>
+            <td><span class="tag info">Informativa</span></td>
+            <td>Aviso para tener en cuenta, sin acción urgente.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Los botones llevan al lugar exacto para resolver la alerta:
+        <span class="ui">Resolver en Planificador</span>, <span class="ui">Abrir orden de taller</span>,
+        <span class="ui">Ver ficha de activo</span> o <span class="ui">Ver ficha del cliente</span>.
+      </p>
+
+      <h3 id="operaciones-de-hoy">Operaciones de hoy</h3>
+      <p>
+        Lista las <span class="tag info">Entrega inicial</span> y <span class="tag ok">Recepción</span> de
+        contratos confirmados o en curso para la fecha de hoy, con el activo y el cliente. El botón
+        <span class="ui">Inspeccionar</span> abre el formulario de inspección ya vinculado a la reserva; los
+        roles que no inspeccionan ven <span class="ui">Ver reserva</span>.
+      </p>
+      <figure class="medium">
+        <div class="frame"><img src="screenshots/dashboard-today.png" alt="Operaciones de hoy" /></div>
+        <figcaption>Entregas y recepciones previstas para hoy.</figcaption>
+      </figure>
+    </section>
+
+    <!-- 7. Planificador -->
+    <section class="chapter" id="planificador">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Planificador</h2>
+        <p class="intro">
+          Un calendario horizontal con una fila por activo. Aquí se crean, mueven y reasignan las reservas.
+        </p>
+      </header>
+
+      <h3 id="vista-del-planificador">Vista del planificador</h3>
+      <figure>
+        <div class="frame"><img src="screenshots/planner.png" alt="Planificador" /></div>
+        <figcaption>Planificador en escala semanal, agrupado por sede.</figcaption>
+      </figure>
+      <ol class="marks">
+        <li>
+          <span class="badge">1</span><strong>Navegación.</strong> Retrocede, vuelve a
+          <span class="ui">Hoy</span> o avanza en el calendario.
+        </li>
+        <li><span class="badge">2</span><strong>Escala.</strong> Día, Semana o Mes.</li>
+        <li>
+          <span class="badge">3</span><strong>Agrupación.</strong> Por Sede, por Categoría o en una Lista.
+        </li>
+        <li>
+          <span class="badge">4</span><strong>Conflictos.</strong> Muestra u oculta el panel de conflictos con
+          su total.
+        </li>
+        <li><span class="badge">5</span><strong>Nueva reserva.</strong> Abre el alta rápida.</li>
+        <li>
+          <span class="badge">6</span><strong>Búsqueda.</strong> Filtra por equipo, código de reserva o
+          cliente.
+        </li>
+        <li>
+          <span class="badge">7</span><strong>Por asignar.</strong> Reservas hechas por categoría que aún no
+          tienen unidad.
+        </li>
+        <li>
+          <span class="badge">8</span><strong>Panel de conflictos.</strong> Lista de bloqueos y avisos
+          abiertos.
+        </li>
+      </ol>
+      <p>
+        Debajo de la búsqueda, los chips <strong>Todos</strong>, <strong>Disponibles</strong>,
+        <strong>En alquiler</strong>, <strong>Con conflicto</strong> y <strong>Taller / FDS</strong> filtran
+        las filas y muestran cuántas unidades hay en cada grupo. La línea roja marcada
+        <span class="tag danger">Ahora</span> señala el momento actual.
+      </p>
+
+      <h3 id="leer-el-cronograma">Leer el cronograma</h3>
+      <ul>
+        <li>
+          Cada fila es un activo, con su foto, código, capacidad, modelo y estado. Pulsar la celda izquierda
+          abre la ficha del activo.
+        </li>
+        <li>
+          Cada barra es una reserva. Su color indica el estado; la leyenda está al pie del calendario:
+          <span class="tag warn">En curso</span> <span class="tag info">Confirmada</span>
+          <span class="tag neutral">Borrador</span>.
+        </li>
+        <li>
+          Las zonas rayadas junto a las barras son el <strong>tiempo de preparación</strong> del equipo entre
+          un alquiler y otro (2 horas para vehículos y 8 horas para maquinaria).
+        </li>
+        <li>
+          Las unidades en taller o fuera de servicio muestran una franja rayada con el texto "Unidad en
+          taller" o "Unidad fuera de servicio".
+        </li>
+        <li>
+          Al pie, el selector de <strong>zona horaria del cronograma</strong> permite elegir en qué zona
+          horaria se muestran las horas.
+        </li>
+      </ul>
+
+      <h3 id="navegar-y-filtrar">Cambiar la escala y agrupar</h3>
+      <p>
+        La escala <strong>Mes</strong> ofrece una vista amplia para planificar con semanas de anticipación; la
+        escala <strong>Día</strong> permite ajustar horarios al detalle. Al arrastrar, las reservas se ajustan
+        a una rejilla acorde a la escala elegida.
+      </p>
+      <figure>
+        <div class="frame">
+          <img src="screenshots/planner-month.png" alt="Planificador en escala mensual" />
+        </div>
+        <figcaption>Escala mensual.</figcaption>
+      </figure>
+
+      <h3 id="reserva-rapida">Crear una reserva rápida</h3>
+      <p>Hay dos formas de abrir el alta rápida:</p>
+      <ul>
+        <li>Pulsa <span class="ui primary">Nueva reserva</span> en la barra superior.</li>
+        <li>
+          Haz clic en una zona libre de la fila de un activo. El diálogo se abre con ese equipo elegido y una
+          ventana de 24 horas desde el punto del clic.
+        </li>
+      </ul>
+      <figure class="medium">
+        <div class="frame">
+          <img src="screenshots/planner-quick-create.png" alt="Alta rápida de una reserva" />
+        </div>
+        <figcaption>Alta rápida con el equipo preseleccionado y verificación inmediata.</figcaption>
+      </figure>
+      <ol class="steps">
+        <li>Elige el <strong>Cliente</strong> y confirma el <strong>Equipo asignado</strong>.</li>
+        <li>
+          Ajusta la <strong>Fecha y hora de inicio</strong> y de <strong>fin</strong>, y las sedes de retiro y
+          devolución.
+        </li>
+        <li>
+          Activa <strong>Incluir operador certificado</strong> si el cliente necesita un operario homologado.
+        </li>
+        <li>
+          Revisa el estado al pie del diálogo: <span class="tag ok">Horario disponible</span>,
+          <span class="tag warn">Con advertencia operativa</span> o
+          <span class="tag danger">Conflicto bloqueante</span>. Si hay advertencias, marca
+          <em>"Acepto las advertencias operativas para registrar la reserva"</em>.
+        </li>
+        <li>
+          Pulsa <span class="ui primary">Crear reserva</span>. Un aviso confirma el código de la reserva
+          nueva.
+        </li>
+      </ol>
+
+      <h3 id="mover-y-reasignar">Mover, redimensionar y reasignar</h3>
+      <p>
+        Las reservas en <strong>borrador</strong> o <strong>confirmadas</strong> se pueden ajustar arrastrando
+        su barra:
+      </p>
+      <ul>
+        <li><strong>Cambiar las fechas:</strong> arrastra la barra hacia los lados.</li>
+        <li><strong>Cambiar la duración:</strong> arrastra el borde izquierdo (inicio) o derecho (fin).</li>
+        <li><strong>Cambiar de unidad:</strong> arrastra la barra a la fila de otro activo.</li>
+      </ul>
+      <p>
+        Mientras arrastras, una silueta muestra el resultado con un ícono: visto bueno, advertencia o bloqueo.
+        Al soltar:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Resultado</th>
+            <th>Qué pasa</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag ok">Válido</span></td>
+            <td>El cambio se guarda y aparece el aviso "Reserva reprogramada".</td>
+          </tr>
+          <tr>
+            <td><span class="tag warn">Con advertencias</span></td>
+            <td>
+              Se abre <strong>Confirmar asignación con advertencias</strong>. Escribe el motivo y pulsa
+              <span class="ui primary">Confirmar con justificación</span>; el motivo queda en la bitácora.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="tag danger">Bloqueado</span></td>
+            <td>El cambio no se aplica y un aviso explica la causa ("Asignación bloqueada: …").</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Las reservas <strong>en curso</strong> solo admiten extender la fecha de fin. Para revertir el último
+        movimiento, pulsa <span class="ui">Deshacer</span> o usa <kbd>Ctrl</kbd> + <kbd>Z</kbd>.
+      </p>
+
+      <h3 id="panel-de-conflictos">Panel de conflictos</h3>
+      <p>
+        El panel de la derecha lista los conflictos abiertos con su tipo (por ejemplo
+        <span class="tag danger">Solape</span> o <span class="tag danger">Mantenimiento</span>). Las pestañas
+        <strong>Todos</strong>, <strong>Bloq.</strong> y <strong>Avisos</strong> los filtran.
+        <span class="ui">Ubicar en cronograma</span> desplaza el calendario hasta la reserva afectada para
+        resolverla arrastrándola. Cierra el panel con la <strong>×</strong> o con el botón
+        <span class="ui">Conflictos</span>.
+      </p>
+
+      <h3 id="detalle-desde-el-planificador">Detalle de una reserva</h3>
+      <p>
+        Al pulsar una barra se abre un panel lateral con el cliente, el equipo, las fechas, las sedes y el
+        importe estimado, además de las acciones que permite su estado.
+        <span class="ui">Ficha completa</span> abre la página de la reserva con toda su información.
+      </p>
+      <figure>
+        <div class="frame">
+          <img src="screenshots/planner-drawer.png" alt="Detalle de reserva en el planificador" />
+        </div>
+        <figcaption>Panel de una reserva confirmada.</figcaption>
+      </figure>
+      <table>
+        <thead>
+          <tr>
+            <th>Estado</th>
+            <th>Acciones disponibles</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag neutral">Borrador</span></td>
+            <td><span class="ui">Confirmar reserva</span>, <span class="ui">Cancelar</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag info">Confirmada</span></td>
+            <td>
+              <span class="ui">Inspección de salida</span>, <span class="ui">Registrar salida</span>,
+              <span class="ui">Cancelar</span>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="tag warn">En curso</span></td>
+            <td>
+              <span class="ui">Inspección de devolución</span>, <span class="ui">Registrar devolución</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 8. Reservas -->
+    <section class="chapter" id="reservas">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Reservas</h2>
+        <p class="intro">Los contratos de alquiler: cómo crearlos, cotizarlos y llevarlos por cada estado.</p>
+      </header>
+
+      <h3 id="listado-de-reservas">Listado de reservas</h3>
+      <figure>
+        <div class="frame"><img src="screenshots/reservations.png" alt="Listado de reservas" /></div>
+        <figcaption>Listado con el resumen por estado.</figcaption>
+      </figure>
+      <ol class="marks">
+        <li><span class="badge">1</span><strong>Búsqueda</strong> por código, cliente o activo.</li>
+        <li>
+          <span class="badge">2</span><strong>Filtro de estado:</strong> Todas, Borradores, Confirmadas, En
+          curso, Finalizadas o Canceladas.
+        </li>
+        <li><span class="badge">3</span><strong>Nueva reserva.</strong></li>
+        <li>
+          <span class="badge">4</span><strong>Acciones</strong> de la fila: ver ficha, confirmar, despachar,
+          registrar devolución o cancelar.
+        </li>
+      </ol>
+      <p>
+        Cada fila muestra el cliente y el código, el activo, el período de servicio con o sin operador, el
+        monto estimado y el estado. Pulsa una fila para abrir su ficha.
+      </p>
+
+      <h3 id="crear-una-reserva">Crear una reserva</h3>
+      <p>
+        El formulario completo se abre con <span class="ui primary">Nueva reserva</span> y se organiza en tres
+        bloques. A la derecha, el panel <strong>Tarifa óptima</strong> recalcula el importe con cada cambio.
+      </p>
+      <figure class="tall">
+        <div class="frame">
+          <img src="screenshots/reservation-new-full.png" alt="Formulario de nueva reserva" />
+        </div>
+        <figcaption>Nueva reserva con un aviso de disponibilidad sobre la unidad elegida.</figcaption>
+      </figure>
+      <ol class="steps">
+        <li>
+          <strong>Cliente y equipo.</strong> Elige el <em>Cliente solicitante</em> y la
+          <em>Categoría de equipo</em>. Si aún no hay clientes, el formulario ofrece el enlace
+          <strong>Crear cliente</strong>.
+        </li>
+        <li><strong>Operador.</strong> Activa <em>Incluir operador certificado</em> si corresponde.</li>
+        <li>
+          <strong>Fechas y sedes.</strong> Indica la fecha y hora de retiro y de devolución (en la hora de la
+          sede) y las sedes de retiro y devolución.
+        </li>
+        <li>
+          <strong>Asignación de activo.</strong> Elige la <em>Unidad asignada</em> o deja
+          <em>Sin asignar (por categoría)</em> para decidir después en el Planificador. La leyenda indica si
+          cada unidad está disponible, tiene advertencias o un conflicto bloqueante.
+        </li>
+        <li>
+          Revisa los <strong>Avisos de disponibilidad</strong>. Si solo hay advertencias, marca la casilla
+          para aceptarlas.
+        </li>
+        <li>
+          Pulsa <span class="ui primary">Registrar reserva</span>. La reserva se crea como
+          <strong>borrador</strong> y se abre su ficha.
+        </li>
+      </ol>
+      <div class="callout tip">
+        <span class="title">Reservar desde otras pantallas</span>
+        Los botones <span class="ui">Reservar activo</span> de la ficha de un activo y
+        <span class="ui">Nueva reserva</span>
+        de la ficha de un cliente abren este formulario con el equipo o el cliente ya elegidos.
+      </div>
+
+      <h3 id="tarifa-optima">Cómo se calcula la tarifa óptima</h3>
+      <p>
+        Cada categoría tiene precios por hora, día, semana y mes. Oruga busca la combinación más barata que
+        cubra el tiempo del alquiler:
+      </p>
+      <ul>
+        <li>
+          Se cuentan las horas reales con <strong>29 minutos de gracia</strong>: pasado ese margen se cobra
+          una hora más (mínimo una hora).
+        </li>
+        <li>Se combinan meses (720 horas), semanas, días y horas para obtener el menor importe.</li>
+        <li>
+          Si cuesta menos, la combinación puede cubrir más tiempo del usado. Por ejemplo, seis días pueden
+          salir más baratos como una semana.
+        </li>
+        <li>La maquinaria pesada no se alquila por horas: su combinación mínima es por días.</li>
+      </ul>
+      <p>
+        El panel muestra el importe base y la explicación, por ejemplo
+        <em>"Combinación más económica para 72 horas de servicio: 3 días"</em>.
+      </p>
+
+      <h3 id="conflictos-y-advertencias">Conflictos y advertencias</h3>
+      <p>Oruga valida la disponibilidad mientras completas la reserva. Hay dos niveles:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Cuándo aparece</th>
+            <th>Efecto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag danger">Solape</span></td>
+            <td>La unidad ya tiene otra reserva en esas fechas.</td>
+            <td rowspan="5"><strong>Bloquea</strong> la confirmación y el despacho.</td>
+          </tr>
+          <tr>
+            <td><span class="tag danger">Mantenimiento</span></td>
+            <td>Hay una orden de taller programada en el período.</td>
+          </tr>
+          <tr>
+            <td><span class="tag danger">No operativo</span></td>
+            <td>La unidad está en taller, fuera de servicio o de baja.</td>
+          </tr>
+          <tr>
+            <td><span class="tag danger">Documento vencido</span></td>
+            <td>El seguro o el permiso vence antes de terminar la reserva.</td>
+          </tr>
+          <tr>
+            <td><span class="tag danger">Cliente bloqueado</span></td>
+            <td>El cliente tiene un bloqueo administrativo.</td>
+          </tr>
+          <tr>
+            <td><span class="tag warn">Tiempo de preparación</span></td>
+            <td>No queda el margen entre alquileres (2 h vehículos, 8 h maquinaria).</td>
+            <td rowspan="3"><strong>Advierte.</strong> Se puede continuar aceptando la advertencia.</td>
+          </tr>
+          <tr>
+            <td><span class="tag warn">Mantenimiento proyectado</span></td>
+            <td>El servicio preventivo vencería durante el alquiler.</td>
+          </tr>
+          <tr>
+            <td><span class="tag warn">Traslado entre sedes</span></td>
+            <td>Las sedes de retiro y devolución son distintas.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 id="ficha-de-la-reserva">Ficha de la reserva</h3>
+      <figure>
+        <div class="frame">
+          <img src="screenshots/reservation-detail.png" alt="Ficha de una reserva confirmada" />
+        </div>
+        <figcaption>Reserva confirmada: falta la inspección de salida para poder despacharla.</figcaption>
+      </figure>
+      <ul>
+        <li>
+          <strong>Cabecera:</strong> código, estado y las acciones disponibles (<span class="ui"
+            >Cancelar</span
+          >, <span class="ui primary">Confirmar reserva</span>, <span class="ui primary">Despachar</span> o
+          <span class="ui primary">Registrar devolución</span>).
+        </li>
+        <li>
+          <strong>Inspecciones:</strong> el estado de la inspección de salida y la de devolución (<span
+            class="tag warn"
+            >Pendiente</span
+          >
+          o <span class="tag ok">Registrada</span>) con los botones
+          <span class="ui">Realizar inspección</span> o <span class="ui">Ver acta</span>.
+        </li>
+        <li>
+          <strong>Historial de cambios:</strong> cada modificación con su fecha, el campo, el valor anterior y
+          el nuevo.
+        </li>
+        <li>
+          <strong>Panel lateral:</strong> importe del contrato, cliente, activo, categoría, retiro, devolución
+          y operador.
+        </li>
+      </ul>
+
+      <h3 id="ciclo-de-vida">Ciclo de vida de una reserva</h3>
+      <div class="states">
+        <svg viewBox="0 0 720 190" role="img" aria-label="Estados de una reserva">
+          <defs>
+            <marker
+              id="arrow"
+              viewBox="0 0 10 10"
+              refX="9"
+              refY="5"
+              markerWidth="7"
+              markerHeight="7"
+              orient="auto-start-reverse"
+            >
+              <path d="M0 0 L10 5 L0 10 z" fill="#687083" />
+            </marker>
+          </defs>
+          <g font-family="Geist Variable, sans-serif" font-size="13" font-weight="600" text-anchor="middle">
+            <rect x="10" y="30" width="130" height="44" rx="10" fill="#f7f8fa" stroke="#d0d5de" />
+            <text x="75" y="57" fill="#4a5263">Borrador</text>
+            <rect x="200" y="30" width="130" height="44" rx="10" fill="#eaf0fe" stroke="#2a66f5" />
+            <text x="265" y="57" fill="#1d55e0">Confirmada</text>
+            <rect x="390" y="30" width="130" height="44" rx="10" fill="#fbefe6" stroke="#c2570c" />
+            <text x="455" y="57" fill="#c2570c">En curso</text>
+            <rect x="580" y="30" width="130" height="44" rx="10" fill="#e7f4ed" stroke="#0b8a4c" />
+            <text x="645" y="57" fill="#0b8a4c">Finalizada</text>
+            <rect x="105" y="132" width="130" height="44" rx="10" fill="#fbeaea" stroke="#d12f2f" />
+            <text x="170" y="159" fill="#d12f2f">Cancelada</text>
+          </g>
+          <g stroke="#687083" stroke-width="1.6" fill="none" marker-end="url(#arrow)">
+            <line x1="140" y1="52" x2="198" y2="52" />
+            <line x1="330" y1="52" x2="388" y2="52" />
+            <line x1="520" y1="52" x2="578" y2="52" />
+            <path d="M75 74 Q 80 125 120 132" />
+            <path d="M265 74 Q 260 125 220 132" />
+          </g>
+          <g font-family="Geist Variable, sans-serif" font-size="11" fill="#4a5263" text-anchor="middle">
+            <text x="169" y="22">Confirmar</text>
+            <text x="359" y="22">Despachar</text>
+            <text x="549" y="22">Devolver</text>
+            <text x="58" y="118" text-anchor="end">Cancelar</text>
+            <text x="282" y="118" text-anchor="start">Cancelar</text>
+          </g>
+        </svg>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Acción</th>
+            <th>Cambio</th>
+            <th>Requisito</th>
+            <th>Quién</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Confirmar reserva</strong></td>
+            <td>Borrador → Confirmada</td>
+            <td>Unidad asignada, cliente sin bloqueo y sin conflictos bloqueantes.</td>
+            <td>Administrador, planificador</td>
+          </tr>
+          <tr>
+            <td><strong>Despachar</strong></td>
+            <td>Confirmada → En curso</td>
+            <td>Inspección de salida registrada y que no sea "No apto".</td>
+            <td>Administrador, planificador, inspector</td>
+          </tr>
+          <tr>
+            <td><strong>Registrar devolución</strong></td>
+            <td>En curso → Finalizada</td>
+            <td>Inspección de devolución registrada (cualquier veredicto).</td>
+            <td>Administrador, planificador, inspector</td>
+          </tr>
+          <tr>
+            <td><strong>Cancelar</strong></td>
+            <td>Borrador o Confirmada → Cancelada</td>
+            <td>Un motivo escrito.</td>
+            <td>Administrador, planificador</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Si falta un requisito, la acción se rechaza con un mensaje claro; por ejemplo, al despachar sin
+        inspección: <em>"Falta la inspección de salida."</em>
+      </p>
+
+      <h3 id="cancelar-una-reserva">Cancelar una reserva</h3>
+      <p>
+        En la ficha, pulsa <span class="ui">Cancelar</span>. El diálogo pide el
+        <strong>Motivo de cancelación</strong>; el botón <span class="ui">Confirmar cancelación</span> se
+        habilita al escribirlo. <span class="ui">Descartar</span>
+        cierra el diálogo sin cambios.
+      </p>
+      <figure class="small">
+        <div class="frame"><img src="screenshots/reservation-cancel.png" alt="Diálogo de cancelación" /></div>
+        <figcaption>La cancelación siempre queda justificada.</figcaption>
+      </figure>
+      <div class="callout warn">
+        Desde el menú de acciones del listado, <span class="ui">Cancelar reserva</span> se aplica de inmediato
+        y sin pedir motivo. Úsalo con cuidado; para dejar constancia del motivo, cancela desde la ficha.
+      </div>
+
+      <h3 id="cliente-bloqueado-en-reservas">Reservas de clientes bloqueados</h3>
+      <p>
+        Si eliges un cliente bloqueado, el formulario lo advierte bajo el selector. Puedes guardar la reserva
+        como borrador, pero no confirmarla hasta que se levante el bloqueo.
+      </p>
+      <figure class="medium">
+        <div class="frame">
+          <img src="screenshots/reservation-blocked-client.png" alt="Aviso de cliente bloqueado" />
+        </div>
+        <figcaption>Aviso al elegir un cliente bloqueado.</figcaption>
+      </figure>
+    </section>
+
+    <!-- 9. Inventario -->
+    <section class="chapter" id="inventario">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Inventario</h2>
+        <p class="intro">
+          El catálogo de vehículos y maquinaria: búsqueda, disponibilidad, fichas técnicas y estado operativo.
+        </p>
+      </header>
+
+      <h3 id="catalogo-de-activos">Catálogo de activos</h3>
+      <figure>
+        <div class="frame"><img src="screenshots/inventory-cards.png" alt="Inventario en tarjetas" /></div>
+        <figcaption>Inventario en vista de tarjetas.</figcaption>
+      </figure>
+      <ol class="marks">
+        <li><span class="badge">1</span><strong>Búsqueda</strong> por código, placa, marca o serial.</li>
+        <li>
+          <span class="badge">2</span><strong>Categoría y sede.</strong> Junto a este selector está el de
+          sede.
+        </li>
+        <li><span class="badge">3</span><strong>Vista</strong> de tarjetas o de tabla.</li>
+        <li><span class="badge">4</span><strong>Chips de estado</strong> con su conteo.</li>
+        <li>
+          <span class="badge">5</span><strong>Libre entre:</strong> muestra solo los activos libres en ese
+          rango de fechas.
+        </li>
+        <li><span class="badge">6</span><strong>Nuevo activo.</strong></li>
+      </ol>
+      <p>
+        Los chips filtran por <strong>Disponible</strong>, <strong>Próx. salida</strong>,
+        <strong>En alquiler</strong>, <strong>En taller</strong>, <strong>Fuera de servicio</strong> y
+        <strong>Baja</strong>, y <strong>Próx. service</strong> muestra los que tienen un mantenimiento
+        cercano. También puedes filtrar por tipo (vehículo o maquinaria) y por motor. Los filtros quedan en la
+        dirección de la página, así que puedes compartir el enlace con la búsqueda ya aplicada.
+      </p>
+      <p>
+        Cada tarjeta muestra la foto, el código, el estado, el modelo, el año, la capacidad, el combustible,
+        la sede y si el servicio está próximo. <span class="ui">Ver ficha</span> abre el detalle.
+      </p>
+
+      <h3 id="vista-de-tabla">Vista de tabla</h3>
+      <p>
+        La vista de tabla resume más activos por pantalla con las columnas Unidad, Categoría, Sede base,
+        Capacidad, Lectura y Estado. El menú de cada fila ofrece <span class="ui">Ver ficha completa</span> y
+        <span class="ui">Cambiar estado operativo</span>.
+      </p>
+      <figure>
+        <div class="frame"><img src="screenshots/inventory-table.png" alt="Inventario en tabla" /></div>
+        <figcaption>Inventario en vista de tabla.</figcaption>
+      </figure>
+
+      <h3 id="registrar-un-activo">Registrar un activo</h3>
+      <p>Pulsa <span class="ui primary">Nuevo activo</span> y completa la ficha:</p>
+      <figure>
+        <div class="frame">
+          <img src="screenshots/inventory-new-asset.png" alt="Diálogo de nuevo activo" />
+        </div>
+        <figcaption>Alta de un activo.</figcaption>
+      </figure>
+      <table>
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Código interno</td>
+            <td>Identificador único, por ejemplo <code>EXC-015</code> o <code>CAM-008</code>.</td>
+          </tr>
+          <tr>
+            <td>Categoría y sede base</td>
+            <td>Tipo de equipo (define tarifas y plantilla de inspección) y sede donde se guarda.</td>
+          </tr>
+          <tr>
+            <td>Marca, modelo y año</td>
+            <td>Datos de fabricación.</td>
+          </tr>
+          <tr>
+            <td>Serial / VIN y placa</td>
+            <td>La placa es opcional para maquinaria de obra.</td>
+          </tr>
+          <tr>
+            <td>Tipo de motor y capacidad</td>
+            <td>Combustible y capacidad en la unidad de la categoría (toneladas, pasajeros…).</td>
+          </tr>
+          <tr>
+            <td>Lectura inicial</td>
+            <td>Horómetro (horas) u odómetro (km), según la categoría.</td>
+          </tr>
+          <tr>
+            <td>Requiere operador certificado</td>
+            <td>
+              Si se activa, toda reserva del equipo debe incluir un operador homologado para poder
+              despacharse.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Pulsa <span class="ui primary">Guardar activo</span>. El nuevo activo aparece en el catálogo, el
+        Planificador y el mapa.
+      </p>
+
+      <h3 id="ficha-del-activo">Ficha del activo</h3>
+      <figure>
+        <div class="frame"><img src="screenshots/asset-detail.png" alt="Ficha de un activo" /></div>
+        <figcaption>Ficha técnica de una retroexcavadora.</figcaption>
+      </figure>
+      <p>La ficha se organiza en pestañas, cada una con su conteo:</p>
+      <ul>
+        <li>
+          <strong>Ficha técnica:</strong> especificaciones mecánicas (motor, medidor, operador, tiempo de
+          preparación) y pólizas y permisos con su número y vencimiento.
+        </li>
+        <li><strong>Reservas</strong> e <strong>Inspecciones:</strong> el historial del equipo.</li>
+        <li><strong>Mantenimiento:</strong> las órdenes de taller del activo.</li>
+        <li><strong>Bitácora:</strong> los cambios manuales de estado con su motivo.</li>
+      </ul>
+      <p>
+        En la cabecera están <span class="ui">Cambiar estado</span> y
+        <span class="ui primary">Reservar activo</span>. El panel lateral resume sede, serial, lectura actual
+        y capacidad.
+      </p>
+
+      <h3 id="cambiar-el-estado-operativo">Cambiar el estado operativo</h3>
+      <p>
+        Desde la ficha (<span class="ui">Cambiar estado</span>), desde la tarjeta (<span class="ui"
+          >Estado</span
+        >) o desde el menú de la tabla se abre el diálogo de cambio de estado. Elige el nuevo estado y escribe
+        el motivo técnico, que es obligatorio y queda en la bitácora.
+      </p>
+      <figure class="narrow">
+        <div class="frame"><img src="screenshots/asset-status.png" alt="Cambio de estado operativo" /></div>
+        <figcaption>Todo cambio de estado exige una justificación.</figcaption>
+      </figure>
+      <table>
+        <thead>
+          <tr>
+            <th>Estado operativo</th>
+            <th>Uso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Operativo</td>
+            <td>Disponible para alquiler.</td>
+          </tr>
+          <tr>
+            <td>En mantenimiento</td>
+            <td>En taller por un servicio preventivo o correctivo.</td>
+          </tr>
+          <tr>
+            <td>Fuera de servicio</td>
+            <td>Avería o siniestro; no se puede alquilar.</td>
+          </tr>
+          <tr>
+            <td>Baja definitiva</td>
+            <td>Retirado de la flota.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        Los estados <strong>Disponible</strong>, <strong>Próxima salida</strong> y
+        <strong>En alquiler</strong> no se eligen a mano: Oruga los calcula a partir de las reservas de un
+        activo operativo.
+      </div>
+    </section>
+
+    <!-- 10. Inspecciones -->
+    <section class="chapter" id="inspecciones">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Inspecciones</h2>
+        <p class="intro">
+          Actas de salida, devolución y rutina generadas desde plantillas, con veredicto automático y
+          comparación.
+        </p>
+      </header>
+
+      <h3 id="listado-de-inspecciones">Listado de inspecciones</h3>
+      <figure>
+        <div class="frame"><img src="screenshots/inspections.png" alt="Listado de inspecciones" /></div>
+        <figcaption>Listado de inspecciones con su resultado.</figcaption>
+      </figure>
+      <ol class="marks">
+        <li><span class="badge">1</span><strong>Búsqueda</strong> por activo, reserva u observación.</li>
+        <li><span class="badge">2</span><strong>Momento:</strong> Todos, Salida, Devolución o Rutina.</li>
+        <li>
+          <span class="badge">3</span><strong>Resultado:</strong> Apto, Apto con observaciones o No apto.
+        </li>
+        <li><span class="badge">4</span><strong>Plantillas.</strong> Abre el editor de plantillas.</li>
+        <li><span class="badge">5</span><strong>Nueva inspección.</strong></li>
+      </ol>
+
+      <h3 id="realizar-una-inspeccion">Realizar una inspección</h3>
+      <p>
+        Puedes empezar una inspección desde varios lugares; cuando la abres desde una reserva, el formulario
+        ya llega con el activo, la reserva y el momento correctos:
+      </p>
+      <ul>
+        <li>La ficha de la reserva: <span class="ui">Realizar inspección</span>.</li>
+        <li>El Tablero, en <strong>Operaciones de hoy</strong>: <span class="ui">Inspeccionar</span>.</li>
+        <li>
+          El panel de la reserva en el Planificador: <span class="ui">Inspección de salida</span> o
+          <span class="ui">Inspección de devolución</span>.
+        </li>
+        <li>
+          El listado: <span class="ui primary">Nueva inspección</span>, para inspecciones de rutina o
+          eligiendo la reserva a mano.
+        </li>
+      </ul>
+      <figure>
+        <div class="frame">
+          <img src="screenshots/inspection-new.png" alt="Formulario de inspección, parte superior" />
+        </div>
+        <figcaption>Datos de la inspección y primeras secciones de la plantilla.</figcaption>
+      </figure>
+      <ol class="steps">
+        <li>
+          <strong>Datos de la inspección.</strong> Confirma el <em>Activo a inspeccionar</em>, la
+          <em>Reserva vinculada</em>, el <em>Momento de control</em> (Salida, Devolución o Rutina) y el
+          <em>Inspector responsable</em>. Al vincular una reserva confirmada se elige "Salida"; si está en
+          curso, "Devolución".
+        </li>
+        <li>
+          <strong>Lectura del medidor.</strong> Escribe la lectura actual; no puede ser menor que la última
+          registrada, que se muestra como referencia.
+        </li>
+        <li><strong>Nivel de combustible.</strong> Ajusta la barra en pasos de 5 %.</li>
+        <li>
+          <strong>Puntos de control.</strong> Responde cada sección de la plantilla. Según el tipo de punto,
+          pulsa <span class="ui">Sí</span> o <span class="ui">No</span>, elige una opción, escribe un valor o
+          sube fotos. Los puntos marcados <span class="tag neutral">Crítico</span> son decisivos para el
+          veredicto.
+        </li>
+        <li><strong>Observaciones.</strong> Agrega notas y evidencias fotográficas generales.</li>
+        <li>
+          <strong>Emitir dictamen.</strong> Revisa el veredicto proyectado al pie y pulsa
+          <span class="ui primary">Emitir dictamen</span>.
+        </li>
+      </ol>
+      <figure>
+        <div class="frame">
+          <img src="screenshots/inspection-new-bottom.png" alt="Formulario de inspección, parte inferior" />
+        </div>
+        <figcaption>Fotos, firma y barra inferior con el veredicto proyectado.</figcaption>
+      </figure>
+      <p>
+        Las fotos se agregan con <span class="ui">Subir foto</span>. Cada campo indica el mínimo exigido, por
+        ejemplo "Mínimo 1 foto (2/1)". El botón <span class="ui">Usar foto de prueba</span> agrega una imagen
+        de ejemplo y sirve para practicar sin cámara.
+      </p>
+
+      <h3 id="campos-condicionales">Campos condicionales</h3>
+      <p>
+        Algunas preguntas solo aparecen según una respuesta anterior. Por ejemplo, en la plantilla de
+        retroexcavadora, al responder <strong>Sí</strong> a "¿Hay fugas de aceite hidráulico?" aparecen
+        <em>Ubicación de la fuga</em> y <em>Fotos de la fuga</em>, ambas obligatorias. El punto fallido se
+        marca con <span class="tag danger">Falla crítica</span> o <span class="tag warn">Falla</span>.
+      </p>
+      <figure class="medium">
+        <div class="frame">
+          <img src="screenshots/inspection-conditional.png" alt="Campos condicionales" />
+        </div>
+        <figcaption>Al indicar una fuga se piden su ubicación y fotos.</figcaption>
+      </figure>
+
+      <h3 id="veredicto">El veredicto</h3>
+      <p>Oruga calcula el veredicto en vivo mientras respondes y lo muestra en la barra inferior:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Veredicto</th>
+            <th>Cuándo</th>
+            <th>Consecuencia</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag ok">Apto</span></td>
+            <td>Ningún punto falla y no hay notas.</td>
+            <td>El equipo puede salir o volver al patio sin observaciones.</td>
+          </tr>
+          <tr>
+            <td><span class="tag warn">Apto con observaciones</span></td>
+            <td>Falla algún punto no crítico o se escribió alguna nota.</td>
+            <td>El equipo puede operar; las observaciones quedan en el acta.</td>
+          </tr>
+          <tr>
+            <td><span class="tag danger">No apto</span></td>
+            <td>Falla algún punto crítico visible.</td>
+            <td>
+              No se puede despachar. El activo pasa a <strong>fuera de servicio</strong> y se crea una orden
+              correctiva automática.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <figure>
+        <div class="frame">
+          <img src="screenshots/inspection-verdict-no-apto.png" alt="Veredicto No apto" />
+        </div>
+        <figcaption>Una falla crítica proyecta un veredicto "No apto".</figcaption>
+      </figure>
+      <figure>
+        <div class="frame">
+          <img src="screenshots/inspection-return.png" alt="Veredicto Apto con observaciones" />
+        </div>
+        <figcaption>Fallas no críticas y una nota: "Apto con observaciones".</figcaption>
+      </figure>
+      <p>
+        Si falta un dato obligatorio, el formulario lo señala al intentar emitir: por ejemplo
+        <em>"Se necesitan al menos N fotos."</em> o
+        <em>"La lectura no puede ser menor a la última registrada"</em>.
+      </p>
+
+      <h3 id="acta-de-inspeccion">El acta de inspección</h3>
+      <p>
+        Al emitir el dictamen se genera el acta, que ya no se puede modificar. Muestra el resultado de cada
+        punto de control (los críticos y los fallidos van marcados), las evidencias y las observaciones. El
+        panel
+        <strong>Datos</strong> resume el número de acta, momento, fecha, inspector, reserva, medidor y
+        combustible.
+      </p>
+      <figure class="tall">
+        <div class="frame"><img src="screenshots/inspection-detail.png" alt="Acta de inspección" /></div>
+        <figcaption>Acta de una inspección de salida apta.</figcaption>
+      </figure>
+
+      <h3 id="comparar-inspecciones">Comparar salida y devolución</h3>
+      <p>
+        Cuando una reserva tiene las dos inspecciones, el acta muestra el botón
+        <span class="ui">Comparar con contraparte</span>. La comparación pone lado a lado ambas actas:
+      </p>
+      <figure>
+        <div class="frame">
+          <img src="screenshots/inspection-compare.png" alt="Comparación de inspecciones" />
+        </div>
+        <figcaption>Comparación con dos daños nuevos detectados al regresar.</figcaption>
+      </figure>
+      <ul>
+        <li>
+          <strong>Uso en el alquiler:</strong> diferencia de lectura del medidor entre la salida y la
+          devolución.
+        </li>
+        <li>
+          <strong>Diferencia de combustible:</strong> en rojo si el equipo volvió con menos combustible.
+        </li>
+        <li>
+          <strong>Daños nuevos:</strong> fallas que no estaban al salir. Pueden generar un cargo al cliente o
+          requerir una orden de taller.
+        </li>
+      </ul>
+      <p>
+        En la tabla, la columna <strong>Cambio</strong> clasifica cada punto:
+        <span class="tag danger">Daño nuevo</span>, <span class="tag ok">Reparado</span>,
+        <span class="tag warn">Preexistente</span> o <span class="tag neutral">Sin cambios</span>. Al final se
+        muestran las fotos de salida y de devolución.
+      </p>
+    </section>
+
+    <!-- 11. Plantillas -->
+    <section class="chapter" id="plantillas">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Plantillas de inspección</h2>
+        <p class="intro">
+          Los formularios de inspección se definen como plantillas editables. Solo el administrador puede
+          modificarlas.
+        </p>
+      </header>
+
+      <h3 id="editor-de-plantillas">El editor de plantillas</h3>
+      <figure>
+        <div class="frame"><img src="screenshots/templates.png" alt="Editor de plantillas" /></div>
+        <figcaption>Editor con la definición a la izquierda y la vista previa a la derecha.</figcaption>
+      </figure>
+      <ol class="marks">
+        <li>
+          <span class="badge">1</span><strong>Plantillas:</strong> retroexcavadora, maquinaria pesada y
+          vehículo.
+        </li>
+        <li><span class="badge">2</span><strong>Definición</strong> en formato JSON.</li>
+        <li>
+          <span class="badge">3</span><strong>Vista previa interactiva</strong> con el veredicto en vivo.
+        </li>
+        <li><span class="badge">4</span><strong>Guardar cambios.</strong></li>
+      </ol>
+      <p>
+        Cada plantilla se aplica a una o más categorías de equipo y se divide en secciones con puntos de
+        control. Cada punto define su tipo (sí o no, nivel, número, opción, varias opciones, texto, foto o
+        firma), si es obligatorio o crítico, la condición que lo hace fallar y, si corresponde, la condición
+        <code>visibleSi</code> que lo muestra solo según otra respuesta.
+      </p>
+      <p>
+        La vista previa se actualiza al escribir, así que puedes probar las condiciones y el veredicto antes
+        de guardar.
+      </p>
+
+      <h3 id="validacion-y-versiones">Validación y versiones</h3>
+      <p>
+        Si la definición tiene un error, el recuadro <strong>Errores de validación del esquema</strong> lo
+        explica (por ejemplo <em>"Sintaxis JSON no válida."</em>, <em>"Id de campo repetido"</em> o
+        <em>"La condición menciona un campo inexistente"</em>) y el botón de guardar se desactiva hasta
+        corregirlo.
+      </p>
+      <figure>
+        <div class="frame">
+          <img src="screenshots/templates-error.png" alt="Error de validación de plantilla" />
+        </div>
+        <figcaption>Una coma faltante impide guardar la plantilla.</figcaption>
+      </figure>
+      <p>
+        Cada vez que guardas se crea una <strong>versión nueva</strong> ("Plantilla guardada (vN)"). Las
+        inspecciones ya emitidas conservan la versión con la que se hicieron, de modo que cambiar una
+        plantilla nunca altera actas anteriores. La gerencia puede consultar las plantillas en modo de solo
+        lectura.
+      </p>
+    </section>
+
+    <!-- 12. Mantenimiento -->
+    <section class="chapter" id="mantenimiento">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Mantenimiento</h2>
+        <p class="intro">
+          Órdenes de taller preventivas y correctivas, y planes que calculan cuándo toca cada servicio.
+        </p>
+      </header>
+
+      <h3 id="ordenes-de-taller">Órdenes de taller</h3>
+      <figure>
+        <div class="frame"><img src="screenshots/maintenance-orders.png" alt="Órdenes de taller" /></div>
+        <figcaption>Pestaña de órdenes de taller.</figcaption>
+      </figure>
+      <ol class="marks">
+        <li><span class="badge">1</span><strong>Órdenes de taller</strong> con su total.</li>
+        <li><span class="badge">2</span><strong>Planes preventivos.</strong></li>
+        <li><span class="badge">3</span><strong>Búsqueda</strong> por activo o descripción.</li>
+        <li><span class="badge">4</span><strong>Tipo:</strong> Todos, Preventivo o Correctivo.</li>
+        <li>
+          <span class="badge">5</span><strong>Estado:</strong> Programadas, En taller, Completadas o
+          Canceladas.
+        </li>
+        <li><span class="badge">6</span><strong>Nueva orden.</strong></li>
+      </ol>
+      <p>
+        Cada orden muestra el activo, el tipo con su origen (plan, inspección o manual), el período estimado,
+        la descripción técnica y el estado: <span class="tag info">Programada</span>,
+        <span class="tag warn">En taller</span>, <span class="tag ok">Completada</span> o
+        <span class="tag neutral">Cancelada</span>.
+      </p>
+
+      <h3 id="programar-una-orden">Programar una orden</h3>
+      <div class="figrow">
+        <div style="flex: 1">
+          <p>Pulsa <span class="ui primary">Nueva orden</span> y completa:</p>
+          <ol class="steps">
+            <li><strong>Activo a intervenir.</strong></li>
+            <li>
+              <strong>Tipo de mantenimiento:</strong> preventivo (plan por horas o km) o correctivo
+              (reparación de avería).
+            </li>
+            <li>
+              <strong>Fecha y hora de inicio</strong> y <strong>fin estimado</strong>, en la hora local de la
+              sede.
+            </li>
+            <li><strong>Descripción del trabajo.</strong></li>
+          </ol>
+          <p>
+            Pulsa <span class="ui primary">Crear orden</span>. La orden queda <strong>programada</strong> y
+            bloquea las reservas del activo en ese período.
+          </p>
+        </div>
+        <figure style="flex: 1">
+          <div class="frame">
+            <img src="screenshots/maintenance-new-order.png" alt="Programar orden de taller" />
+          </div>
+          <figcaption>Diálogo para programar una orden.</figcaption>
+        </figure>
+      </div>
+
+      <h3 id="iniciar-y-cerrar-una-orden">Iniciar y cerrar una orden</h3>
+      <p>El menú <strong>⋯</strong> de cada orden ofrece las acciones según su estado:</p>
+      <ul>
+        <li>
+          <span class="ui">Iniciar en taller</span>: la orden pasa a "En taller" y el activo queda en
+          mantenimiento.
+        </li>
+        <li><span class="ui">Completar y cerrar orden</span>: disponible cuando la orden está en taller.</li>
+        <li><span class="ui">Cancelar orden</span>.</li>
+      </ul>
+      <div class="figrow">
+        <figure>
+          <div class="frame">
+            <img src="screenshots/maintenance-order-menu.png" alt="Menú de acciones de una orden" />
+          </div>
+          <figcaption>Acciones de una orden en taller.</figcaption>
+        </figure>
+        <figure>
+          <div class="frame">
+            <img src="screenshots/maintenance-close-order.png" alt="Cerrar orden de mantenimiento" />
+          </div>
+          <figcaption>Cierre con la lectura final del medidor.</figcaption>
+        </figure>
+      </div>
+      <p>
+        Para cerrar, registra la <strong>Lectura del medidor al cierre</strong> y pulsa
+        <span class="ui primary">Completar orden</span>. Al cerrar una orden <strong>preventiva</strong>,
+        Oruga toma esa lectura y la fecha de hoy como último servicio, y recalcula los próximos vencimientos.
+        El activo vuelve a estar operativo, salvo que tenga otra orden abierta.
+      </p>
+
+      <h3 id="planes-preventivos">Planes preventivos</h3>
+      <figure>
+        <div class="frame"><img src="screenshots/maintenance-plans.png" alt="Planes preventivos" /></div>
+        <figcaption>Próximos vencimientos de cada activo.</figcaption>
+      </figure>
+      <p>
+        Esta pestaña muestra, para cada activo, el plan aplicable, la lectura actual, el próximo vencimiento
+        ("Faltan 112 horas", "Excedido en 40 horas", "En 30 días") y su estado. El botón
+        <span class="ui">Programar</span> abre una orden nueva con el activo ya elegido.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Plan</th>
+            <th>Intervalo</th>
+            <th>Aviso "por vencer"</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Servicio 250 h (maquinaria)</td>
+            <td>Cada 250 horas de uso</td>
+            <td>25 horas antes</td>
+          </tr>
+          <tr>
+            <td>Servicio 10.000 km (vehículos)</td>
+            <td>Cada 10.000 km</td>
+            <td>800 km antes</td>
+          </tr>
+          <tr>
+            <td>Revisión semestral</td>
+            <td>Cada 180 días</td>
+            <td>15 días antes</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        El vencimiento llega con lo que ocurra primero, la lectura o la fecha. El estado es
+        <span class="tag ok">Al día</span>, <span class="tag warn">Por vencer</span> dentro del margen de
+        aviso, o <span class="tag danger">Vencido</span> al superar el intervalo.
+      </p>
+    </section>
+
+    <!-- 13. Clientes -->
+    <section class="chapter" id="clientes">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Clientes</h2>
+        <p class="intro">
+          El directorio de empresas y personas que alquilan equipos, con su historial y bloqueos.
+        </p>
+      </header>
+
+      <h3 id="directorio-de-clientes">Directorio de clientes</h3>
+      <figure>
+        <div class="frame"><img src="screenshots/clients.png" alt="Directorio de clientes" /></div>
+        <figcaption>Directorio de clientes.</figcaption>
+      </figure>
+      <ol class="marks">
+        <li><span class="badge">1</span><strong>Búsqueda</strong> por razón social, nombre o RIF/cédula.</li>
+        <li><span class="badge">2</span><strong>Tipo:</strong> empresas o personas naturales.</li>
+        <li><span class="badge">3</span><strong>Estado:</strong> Todos, Activos o Bloqueados.</li>
+        <li><span class="badge">4</span><strong>Nuevo cliente.</strong></li>
+        <li><span class="badge">5</span><strong>Acciones:</strong> ver ficha, bloquear o desbloquear.</li>
+      </ol>
+
+      <h3 id="registrar-un-cliente">Registrar un cliente</h3>
+      <div class="figrow">
+        <div style="flex: 1">
+          <p>
+            Pulsa <span class="ui primary">Nuevo cliente</span>, elige si es una
+            <strong>empresa o constructora</strong> o una <strong>persona natural</strong>, y completa el
+            nombre, el documento, el teléfono y el correo.
+          </p>
+          <p>
+            Oruga valida los datos al pulsar <span class="ui primary">Crear cliente</span> y explica cualquier
+            error, como en la figura.
+          </p>
+        </div>
+        <figure style="flex: 1.1">
+          <div class="frame">
+            <img src="screenshots/client-new.png" alt="Nuevo cliente con error de RIF" />
+          </div>
+          <figcaption>El RIF no tiene el formato correcto.</figcaption>
+        </figure>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Dato</th>
+            <th>Formato válido</th>
+            <th>Ejemplo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>RIF (empresas)</td>
+            <td>Letra, guion, 8 dígitos, guion y dígito verificador</td>
+            <td class="mono">J-12345678-9</td>
+          </tr>
+          <tr>
+            <td>Cédula (personas)</td>
+            <td>V o E, guion y de 6 a 9 dígitos (también se acepta un RIF)</td>
+            <td class="mono">V-12345678</td>
+          </tr>
+          <tr>
+            <td>Teléfono</td>
+            <td>De 7 a 20 caracteres entre dígitos, espacios, guiones y paréntesis; puede empezar con +</td>
+            <td class="mono">+58 412-555-1234</td>
+          </tr>
+          <tr>
+            <td>Correo</td>
+            <td>Dirección de correo válida</td>
+            <td class="mono">compras@empresa.com</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        No se puede registrar dos veces el mismo documento: Oruga avisa
+        <em>"Ya existe un cliente con ese documento."</em>
+      </p>
+
+      <h3 id="ficha-del-cliente">Ficha del cliente</h3>
+      <figure>
+        <div class="frame">
+          <img src="screenshots/client-detail.png" alt="Ficha de un cliente bloqueado" />
+        </div>
+        <figcaption>Ficha de un cliente bloqueado con su historial.</figcaption>
+      </figure>
+      <ul>
+        <li>
+          <strong>Reservas totales</strong> y <strong>Facturación acumulada</strong>: la suma de los importes
+          estimados de sus reservas confirmadas, en curso y finalizadas.
+        </li>
+        <li>
+          <strong>Historial de alquileres y contratos:</strong> código, período, operador, importe, estado y
+          el enlace <span class="ui">Ver contrato</span>.
+        </li>
+        <li><strong>Nueva reserva:</strong> abre el formulario con este cliente ya elegido.</li>
+      </ul>
+
+      <h3 id="bloquear-un-cliente">Bloquear y desbloquear</h3>
+      <p>
+        El bloqueo administrativo (por deuda, incumplimiento u otra causa) se activa con
+        <span class="ui">Bloquear cliente</span> en la ficha o en el menú del listado, y se retira con
+        <span class="ui">Desbloquear</span>. El cambio es inmediato. Mientras un cliente está bloqueado:
+      </p>
+      <ul>
+        <li>Puedes guardar reservas suyas como <strong>borrador</strong>, pero no confirmarlas.</li>
+        <li>
+          Sus reservas ya confirmadas tampoco se pueden <strong>despachar</strong>: el bloqueo es un conflicto
+          bloqueante.
+        </li>
+        <li>El Tablero muestra una alerta "Reserva con cliente bloqueado" en la categoría Clientes.</li>
+      </ul>
+    </section>
+
+    <!-- 14. Ubicación -->
+    <section class="chapter" id="ubicacion">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Ubicación y telemetría</h2>
+        <p class="intro">Dónde está cada equipo, qué está haciendo y si se salió de la obra autorizada.</p>
+      </header>
+
+      <h3 id="mapa-de-flota">Mapa de flota</h3>
+      <figure>
+        <div class="frame"><img src="screenshots/map.png" alt="Mapa de flota" /></div>
+        <figcaption>Mapa de flota con el panel de telemetría.</figcaption>
+      </figure>
+      <ol class="marks">
+        <li>
+          <span class="badge">1</span><strong>Capas:</strong> muestra u oculta las geocercas y las sedes.
+        </li>
+        <li><span class="badge">2</span><strong>Búsqueda</strong> por código, modelo o cliente.</li>
+        <li><span class="badge">3</span><strong>Filtros</strong> por sede y por estado.</li>
+        <li>
+          <span class="badge">4</span><strong>Alertas de geocerca.</strong> Pulsa
+          <span class="ui">Filtrar</span> para ver solo esos activos.
+        </li>
+        <li><span class="badge">5</span><strong>Mapa</strong> con un marcador por activo.</li>
+      </ol>
+      <p>
+        El panel <strong>Telemetría de Flota</strong> lista los activos visibles con su modelo, estado, sede,
+        cliente si está alquilado, coordenadas GPS y lectura. Las etiquetas
+        <span class="tag danger">Fuera de obra</span> y <span class="tag info">En tránsito</span> resaltan los
+        casos que requieren atención. Pulsa una fila para centrar el mapa en ese activo.
+      </p>
+      <p>
+        Los equipos alquilados reportan su posición cada 4 segundos. El color del marcador indica el estado:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Color</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="dot" style="background: #10b981"></span>Verde</td>
+            <td>Disponible</td>
+          </tr>
+          <tr>
+            <td><span class="dot" style="background: #0284c7"></span>Azul</td>
+            <td>En alquiler</td>
+          </tr>
+          <tr>
+            <td><span class="dot" style="background: #f59e0b"></span>Ámbar</td>
+            <td>Próxima salida</td>
+          </tr>
+          <tr>
+            <td><span class="dot" style="background: #8b5cf6"></span>Violeta</td>
+            <td>En mantenimiento</td>
+          </tr>
+          <tr>
+            <td><span class="dot" style="background: #f43f5e"></span>Rosa</td>
+            <td>Fuera de servicio</td>
+          </tr>
+          <tr>
+            <td><span class="dot" style="background: #64748b"></span>Gris</td>
+            <td>De baja</td>
+          </tr>
+          <tr>
+            <td><span class="dot" style="background: #ffc21a"></span>Amarillo</td>
+            <td>Activo seleccionado</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout warn">
+        <span class="title">El mapa necesita Internet</span>
+        Las calles y ciudades del mapa se descargan de OpenStreetMap. Sin conexión, los marcadores siguen
+        visibles pero el fondo del mapa se verá gris.
+      </div>
+
+      <h3 id="ficha-flotante">Ficha flotante del activo</h3>
+      <p>
+        Al elegir un activo, el mapa vuela hasta su posición y abre una ficha flotante con la lectura actual,
+        la sede base, el último reporte, la motorización y el contrato vigente. Si el equipo está fuera de su
+        obra aparece
+        <strong>Alerta de Geocerca Activa</strong>; si no, <em>"Dentro del perímetro de obra autorizado"</em>.
+        <span class="ui">Abrir ficha completa del activo</span> lleva al Inventario y
+        <span class="ui">Ver todo</span>
+        vuelve a la vista general.
+      </p>
+      <figure>
+        <div class="frame"><img src="screenshots/map-asset.png" alt="Ficha flotante en el mapa" /></div>
+        <figcaption>Un activo alquilado fuera del radio de su obra.</figcaption>
+      </figure>
+
+      <h3 id="geocercas">Geocercas</h3>
+      <p>
+        Cada equipo alquilado tiene una geocerca: un círculo de <strong>1200 metros</strong> alrededor de la
+        obra donde debe trabajar. Si su posición sale de ese radio, Oruga genera una alerta de geocerca, marca
+        el activo como "Fuera de obra" y muestra en su ventana emergente
+        <em>"¡Fuera del radio de obra autorizado!"</em>. Al pulsar el círculo verás el radio permitido y la
+        distancia actual.
+      </p>
+    </section>
+
+    <!-- 15. Otras pantallas -->
+    <section class="chapter" id="otras-pantallas">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Otras pantallas y herramientas</h2>
+        <p class="intro">
+          Créditos, páginas de error y el panel para probar la aplicación en distintas condiciones.
+        </p>
+      </header>
+
+      <h3 id="creditos-de-imagenes">Créditos de imágenes</h3>
+      <p>
+        Las fotografías de equipos y escenas provienen de Wikimedia Commons con licencias libres. La página
+        <span class="path">Créditos de imágenes</span>, al pie del menú lateral, lista cada foto con su autor,
+        su licencia y un enlace a la fuente original.
+      </p>
+      <figure>
+        <div class="frame"><img src="screenshots/credits.png" alt="Créditos de imágenes" /></div>
+        <figcaption>Autores y licencias de las fotografías.</figcaption>
+      </figure>
+
+      <h3 id="pagina-no-encontrada">Página no encontrada</h3>
+      <p>
+        Si una dirección no existe, Oruga muestra <em>"Esta ruta no existe"</em> con la dirección escrita y el
+        botón <span class="ui primary">Ir a mi inicio</span>.
+      </p>
+      <figure class="medium">
+        <div class="frame"><img src="screenshots/not-found.png" alt="Página no encontrada" /></div>
+        <figcaption>Página no encontrada.</figcaption>
+      </figure>
+
+      <h3 id="panel-de-desarrollo">Panel de desarrollo</h3>
+      <p>
+        El botón con el ícono de controles deslizantes, en la cabecera, abre el
+        <strong>Panel de desarrollo</strong>. Sirve para demostraciones y pruebas, porque simula condiciones
+        difíciles de reproducir. Sus ajustes se pierden al recargar la página.
+      </p>
+      <div class="figrow">
+        <div style="flex: 1.1">
+          <ul>
+            <li><strong>Latencia:</strong> Sin retardo, Normal o Lenta, para ver los estados de carga.</li>
+            <li>
+              <strong>Forzar error:</strong> hace que las escrituras respondan con un error 500 (servidor) o
+              409 (conflicto), solo la próxima vez o siempre.
+            </li>
+            <li>
+              <strong>Tiempo real:</strong> el interruptor <em>Recibir eventos</em> pausa o reanuda las
+              actualizaciones en vivo.
+            </li>
+            <li><strong>Falla de evidencias:</strong> probabilidad de que falle la subida de una foto.</li>
+            <li>
+              <strong>Base de datos local:</strong> <span class="ui">Vaciar base de datos</span> elimina
+              activos, clientes, reservas, órdenes e inspecciones.
+            </li>
+          </ul>
+          <div class="callout danger">
+            <span class="title">Vaciar la base no se puede deshacer</span>
+            Borra toda la información operativa guardada en el navegador. Las cuentas y los catálogos se
+            conservan.
+          </div>
+        </div>
+        <figure style="flex: 1">
+          <div class="frame"><img src="screenshots/dev-panel.png" alt="Panel de desarrollo" /></div>
+          <figcaption>Panel de desarrollo.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 16. Preguntas frecuentes -->
+    <section class="chapter" id="preguntas-frecuentes">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Preguntas frecuentes</h2>
+        <p class="intro">Mensajes habituales, qué significan y cómo resolverlos.</p>
+      </header>
+
+      <h3 id="problemas-de-acceso">Acceso y datos</h3>
+      <table class="compact">
+        <thead>
+          <tr>
+            <th style="width: 38%">Situación</th>
+            <th>Solución</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>"Correo o clave incorrectos."</td>
+            <td>
+              Revisa mayúsculas y espacios. Las cuentas de demostración usan la clave <code>oruga2026</code>.
+              Recuerda que las cuentas creadas existen solo en el navegador donde se registraron.
+            </td>
+          </tr>
+          <tr>
+            <td>No puedo iniciar sesión desde otra dirección de red.</td>
+            <td>Abre Oruga desde <code>localhost</code> o un sitio con HTTPS.</td>
+          </tr>
+          <tr>
+            <td>La sesión se cerró sola y volví al acceso.</td>
+            <td>
+              La sesión dejó de ser válida, por ejemplo tras borrar los datos del navegador. Vuelve a entrar;
+              Oruga te devuelve a la página en la que estabas.
+            </td>
+          </tr>
+          <tr>
+            <td>No veo un módulo en el menú.</td>
+            <td>Tu rol no tiene acceso. Consulta la <a href="#matriz-de-permisos">matriz de permisos</a>.</td>
+          </tr>
+          <tr>
+            <td>Mis datos desaparecieron.</td>
+            <td>
+              Los datos viven en el navegador: se pierden en ventanas privadas, en otro navegador o al borrar
+              los datos del sitio.
+            </td>
+          </tr>
+          <tr>
+            <td>El mapa se ve gris.</td>
+            <td>No hay conexión a Internet para descargar el fondo del mapa.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 id="problemas-con-reservas">Reservas e inspecciones</h3>
+      <table class="compact">
+        <thead>
+          <tr>
+            <th style="width: 38%">Mensaje o situación</th>
+            <th>Solución</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>No puedo confirmar una reserva.</td>
+            <td>
+              Revisa que tenga unidad asignada, que el cliente no esté bloqueado y que no haya conflictos
+              bloqueantes en los avisos de disponibilidad.
+            </td>
+          </tr>
+          <tr>
+            <td>"Falta la inspección de salida."</td>
+            <td>
+              Realiza la inspección de salida antes de despachar. Si el acta es "No apto", el equipo no puede
+              salir.
+            </td>
+          </tr>
+          <tr>
+            <td>"La inspección de devolución requiere una reserva en curso."</td>
+            <td>
+              Despacha primero la reserva. La devolución solo se inspecciona con el equipo fuera del patio.
+            </td>
+          </tr>
+          <tr>
+            <td>"La inspección de salida requiere una reserva confirmada."</td>
+            <td>Confirma la reserva antes de inspeccionar la salida.</td>
+          </tr>
+          <tr>
+            <td>"La lectura no puede ser menor a la última registrada."</td>
+            <td>Escribe una lectura igual o mayor que la indicada bajo el campo.</td>
+          </tr>
+          <tr>
+            <td>"Se necesitan al menos N fotos."</td>
+            <td>Agrega las fotos que faltan en el campo señalado.</td>
+          </tr>
+          <tr>
+            <td>"Asignación bloqueada: …" al arrastrar en el Planificador.</td>
+            <td>
+              El destino tiene un conflicto bloqueante. Elige otra unidad u otras fechas, o resuelve el
+              conflicto primero.
+            </td>
+          </tr>
+          <tr>
+            <td>No puedo arrastrar una reserva.</td>
+            <td>
+              Solo se mueven reservas en borrador o confirmadas, y solo con un rol que pueda moverlas. Las
+              reservas en curso solo admiten extender el fin.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 17. Glosario -->
+    <section class="chapter" id="glosario">
+      <header class="chapter-head">
+        <div class="label"></div>
+        <h2>Glosario</h2>
+        <p class="intro">Términos que aparecen en la aplicación y en este manual.</p>
+      </header>
+      <h3 id="terminos">Términos</h3>
+      <table>
+        <tbody>
+          <tr>
+            <td style="width: 30%"><strong>Activo</strong></td>
+            <td>Cada vehículo o máquina de la flota, identificado por su código interno.</td>
+          </tr>
+          <tr>
+            <td><strong>Acta</strong></td>
+            <td>Registro final e inmodificable de una inspección.</td>
+          </tr>
+          <tr>
+            <td><strong>Advertencia operativa</strong></td>
+            <td>Aviso que permite continuar si se acepta de forma explícita.</td>
+          </tr>
+          <tr>
+            <td><strong>Borrador</strong></td>
+            <td>Reserva registrada pero aún no confirmada con el cliente.</td>
+          </tr>
+          <tr>
+            <td><strong>Categoría</strong></td>
+            <td>
+              Tipo de equipo (excavadora, grúa, camioneta…). Define tarifas, plan de mantenimiento y plantilla
+              de inspección.
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Conflicto bloqueante</strong></td>
+            <td>Situación que impide confirmar o despachar una reserva hasta resolverse.</td>
+          </tr>
+          <tr>
+            <td><strong>Despacho</strong></td>
+            <td>Entrega del equipo al cliente; la reserva pasa a "En curso".</td>
+          </tr>
+          <tr>
+            <td><strong>Devolución</strong></td>
+            <td>Recepción del equipo en el patio al terminar el alquiler; la reserva pasa a "Finalizada".</td>
+          </tr>
+          <tr>
+            <td><strong>FDS</strong></td>
+            <td>Fuera de servicio: activo averiado o siniestrado que no puede alquilarse.</td>
+          </tr>
+          <tr>
+            <td><strong>Geocerca</strong></td>
+            <td>Círculo de 1200 m alrededor de la obra donde debe estar un equipo alquilado.</td>
+          </tr>
+          <tr>
+            <td><strong>Lectura</strong></td>
+            <td>Valor del horómetro (horas de uso) o del odómetro (kilómetros) del equipo.</td>
+          </tr>
+          <tr>
+            <td><strong>Orden de taller</strong></td>
+            <td>Trabajo de mantenimiento preventivo o correctivo programado sobre un activo.</td>
+          </tr>
+          <tr>
+            <td><strong>Plan preventivo</strong></td>
+            <td>Regla que indica cada cuántas horas, kilómetros o días toca un servicio.</td>
+          </tr>
+          <tr>
+            <td><strong>Plantilla</strong></td>
+            <td>Definición de las secciones y puntos de control de un formulario de inspección.</td>
+          </tr>
+          <tr>
+            <td><strong>Punto crítico</strong></td>
+            <td>Punto de control cuya falla hace que el equipo sea "No apto".</td>
+          </tr>
+          <tr>
+            <td><strong>RIF</strong></td>
+            <td>Registro de Información Fiscal de una empresa o persona en Venezuela.</td>
+          </tr>
+          <tr>
+            <td><strong>Sede</strong></td>
+            <td>Patio de la empresa: Maracaibo, Caracas, Valencia o Cúcuta.</td>
+          </tr>
+          <tr>
+            <td><strong>Tarifa óptima</strong></td>
+            <td>Combinación de meses, semanas, días y horas que da el menor importe para un alquiler.</td>
+          </tr>
+          <tr>
+            <td><strong>Tiempo de preparación</strong></td>
+            <td>
+              Margen entre dos alquileres del mismo equipo: 2 horas para vehículos y 8 horas para maquinaria.
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Veredicto</strong></td>
+            <td>Resultado de una inspección: Apto, Apto con observaciones o No apto.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <script>
+      // Numera capítulos y secciones y arma el índice a partir de los títulos del documento.
+      (() => {
+        const list = document.getElementById('toc-list');
+        const entry = (id, number, text) => {
+          const link = document.createElement('a');
+          link.href = `#${id}`;
+          const num = document.createElement('span');
+          num.className = 'num';
+          num.textContent = number;
+          const label = document.createElement('span');
+          label.textContent = text;
+          const fill = document.createElement('span');
+          fill.className = 'fill';
+          const page = document.createElement('span');
+          page.className = 'page';
+          page.dataset.tocPage = id;
+          page.textContent = '00';
+          link.append(num, label, fill, page);
+          return link;
+        };
+        document.querySelectorAll('section.chapter').forEach((chapter, index) => {
+          const n = index + 1;
+          chapter.querySelector('.chapter-head .label').textContent = `Capítulo ${n}`;
+          const item = document.createElement('li');
+          item.append(entry(chapter.id, String(n), chapter.querySelector('h2').textContent));
+          const sections = document.createElement('ol');
+          chapter.querySelectorAll('h3[id]').forEach((heading, j) => {
+            const number = `${n}.${j + 1}`;
+            const sub = document.createElement('li');
+            sub.append(entry(heading.id, number, heading.textContent));
+            sections.append(sub);
+            const tag = document.createElement('span');
+            tag.className = 'num';
+            tag.textContent = number;
+            heading.prepend(tag);
+          });
+          if (sections.children.length) item.append(sections);
+          list.append(item);
+        });
+      })();
+    </script>
+  </body>
+</html>

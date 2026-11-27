@@ -11,3 +11,6 @@ test-results
 .DS_Store
 *.tsbuildinfo
 .atl
+
+# Caché local del detector de diseño (rutas de la máquina)
+.impeccable/hook.cache.json

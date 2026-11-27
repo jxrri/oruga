@@ -1,0 +1,38 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "geist",
+        "createdAt": "2026-11-26T17:50:09.124Z",
+        "reason": "Brand font of the Oruga app itself (@fontsource-variable/geist in package.json, used in src/index.css); the manual matches the product typography on purpose"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist mono",
+        "createdAt": "2026-11-26T17:50:09.190Z",
+        "reason": "Brand mono font of the Oruga app (@fontsource-variable/geist-mono in package.json); the manual matches the product typography on purpose"
+      },
+      {
+        "rule": "oversized-h1",
+        "value": "*",
+        "files": [
+          "docs/user-manual/manual.html"
+        ],
+        "createdAt": "2026-11-26T17:50:26.217Z",
+        "reason": "Print cover title: 34pt on an A4 page, verified in the rendered PDF; the detector reads print units as 5440px. Text is the app's own login tagline"
+      },
+      {
+        "rule": "aphoristic-cadence",
+        "value": "*",
+        "files": [
+          "docs/user-manual/manual.html"
+        ],
+        "createdAt": "2026-11-26T17:50:26.294Z",
+        "reason": "Matches join verdict-table cells; 'No apto' is the app's domain verdict label, not a rebuttal sentence"
+      }
+    ]
+  }
+}
