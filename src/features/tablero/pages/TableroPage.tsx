@@ -1,209 +1,201 @@
 import { Link } from 'react-router';
-import { useMetricasTablero } from '../useMetricasTablero';
+import { usePuede, useUsuario } from '@/app/hooks';
+import { DIAS_SERIE, useMetricasTablero } from '../useMetricasTablero';
+import { AnillosFlota } from '../components/AnillosFlota';
 import { GraficoDistribucionFlota } from '../components/GraficoDistribucionFlota';
 import { GraficoUtilizacionCategorias } from '../components/GraficoUtilizacionCategorias';
 import { GraficoTendenciaIngresos } from '../components/GraficoTendenciaIngresos';
 import { PanelAlertasAccionables } from '../components/PanelAlertasAccionables';
 import { TablaOperacionesHoy } from '../components/TablaOperacionesHoy';
+import { Tarjeta, type EstadoBloque } from '../components/Tarjeta';
+import { TarjetaKpi } from '../components/TarjetaKpi';
+import { useEntrada } from '@/shared/hooks/useEntrada';
+import { formatearMonto, formatearNumero } from '@/shared/lib/formato';
+import { Button, EmptyState, ErrorState, Skeleton } from '@/shared/ui';
 import { EncabezadoPagina } from '@/shared/ui/EncabezadoPagina';
-import { Stat } from '@/shared/ui/Stat';
 import { Monto } from '@/shared/ui/Monto';
-import {
-  ChartPieIcon,
-  TruckIcon,
-  WrenchIcon,
-  WarningIcon,
-  CoinsIcon,
-  CalendarCheckIcon,
-  MapTrifoldIcon,
-  PlusIcon,
-} from '@phosphor-icons/react';
+import { CalendarCheckIcon, MapTrifoldIcon, PlusIcon, TruckIcon } from '@phosphor-icons/react';
+
+/** Filas de esqueleto con la forma de un reporte: cifra y barras. */
+const esqueletoReporte = (
+  <div className="space-y-3">
+    <Skeleton className="mb-5 h-8 w-28" />
+    {[0, 1, 2, 3, 4, 5].map((i) => (
+      <Skeleton key={i} className="h-5 w-full" />
+    ))}
+  </div>
+);
 
 export default function TableroPage() {
+  const usuario = useUsuario();
+  const puedeCrearReserva = usePuede('crear', 'reserva');
   const {
     kpis,
+    series,
+    anillos,
     distribucionEstados,
     utilizacionPorCategoria,
     ingresosMensuales,
     alertasAccionables,
     operacionesHoy,
     cargando,
+    error,
+    reintentar,
   } = useMetricasTablero();
+  const ref = useEntrada<HTMLDivElement>();
 
-  if (cargando) {
-    return (
-      <div className="p-6 space-y-6 max-w-7xl mx-auto">
-        <div className="h-8 w-48 bg-panel-2 rounded animate-pulse" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-28 bg-panel-2 rounded-xl animate-pulse" />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="h-80 bg-panel-2 rounded-xl animate-pulse" />
-          <div className="h-80 lg:col-span-2 bg-panel-2 rounded-xl animate-pulse" />
-        </div>
-      </div>
-    );
-  }
+  const estado: EstadoBloque = { cargando, error, onReintentar: reintentar };
+  const nombre = usuario?.nombre.split(' ')[0];
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto animate-in fade-in duration-200">
-      {/* Encabezado ejecutivo */}
+    <div ref={ref} className="mx-auto w-full max-w-[1400px]">
       <EncabezadoPagina
-        titulo="Tablero de Control"
+        titulo={nombre ? `Hola, ${nombre}` : 'Hola'}
         descripcion="Visión operativa en tiempo real de flota, tasa de utilización, alertas y telemetría."
         acciones={
-          <div className="flex items-center gap-2">
-            <Link
-              to="/ubicacion"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-panel border border-line hover:border-line-strong hover:bg-panel-2 text-xs font-medium text-ink transition-colors"
-            >
-              <MapTrifoldIcon size={16} className="text-info" />
-              <span>Mapa de Flota</span>
-            </Link>
-
-            <Link
-              to="/planificador"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-panel border border-line hover:border-line-strong hover:bg-panel-2 text-xs font-medium text-ink transition-colors"
-            >
-              <CalendarCheckIcon size={16} className="text-accent-fg" />
-              <span>Planificador</span>
-            </Link>
-
-            <Link
-              to="/reservas/nueva"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-accent-ink hover:opacity-95 text-xs font-medium transition-colors"
-            >
-              <PlusIcon size={16} weight="bold" />
-              <span>Nueva Reserva</span>
-            </Link>
-          </div>
+          <>
+            <Button asChild>
+              <Link to="/ubicacion">
+                <MapTrifoldIcon size={16} className="text-ink-3" aria-hidden />
+                Mapa de flota
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link to="/planificador">
+                <CalendarCheckIcon size={16} className="text-ink-3" aria-hidden />
+                Planificador
+              </Link>
+            </Button>
+            {puedeCrearReserva && (
+              <Button asChild variante="primario">
+                <Link to="/reservas/nueva">
+                  <PlusIcon size={16} aria-hidden />
+                  Nueva reserva
+                </Link>
+              </Button>
+            )}
+          </>
         }
       />
 
-      {/* Tarjetas de Indicadores Clave (KPIs con GSAP animate) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-        <Stat
-          etiqueta="Utilización de Flota"
-          valor={kpis.tasaUtilizacionGlobal}
-          formato={(n) => `${n} %`}
-          icono={ChartPieIcon}
-          tono={kpis.tasaUtilizacionGlobal >= 65 ? 'ok' : 'warn'}
-          detalle="Horas reservadas sobre disponibles"
-        />
-
-        <Stat
-          etiqueta="En Alquiler"
-          valor={kpis.activosEnAlquiler}
-          icono={TruckIcon}
-          tono="info"
-          detalle={`${kpis.activosOperativos} disponibles en patio`}
-          to="/inventario"
-        />
-
-        <Stat
-          etiqueta="Mantenimientos"
-          valor={kpis.mantenimientosVencidos}
-          icono={WrenchIcon}
-          tono={kpis.mantenimientosVencidos > 0 ? 'danger' : 'neutro'}
-          detalle={
-            kpis.mantenimientosVencidos > 0
-              ? `${kpis.mantenimientosVencidos} vencidos (${kpis.mantenimientosPorVencer} por vencer)`
-              : 'Flota con planes al día'
-          }
-          to="/mantenimiento"
-        />
-
-        <Stat
-          etiqueta="Conflictos Abiertos"
-          valor={kpis.conflictosAbiertosCount}
-          icono={WarningIcon}
-          tono={kpis.conflictosAbiertosCount > 0 ? 'warn' : 'ok'}
-          detalle={
-            kpis.conflictosAbiertosCount > 0
-              ? 'Solapes o activos no operativos'
-              : 'Sin colisiones en calendario'
-          }
-          to="/planificador"
-        />
-
-        <div className="p-4 rounded-xl bg-panel border border-line shadow-panel flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs text-ink-3">
-            <span>Facturación del Mes</span>
-            <CoinsIcon size={18} className="text-accent-fg" />
-          </div>
-          <div className="my-1">
-            <div className="text-xl sm:text-2xl font-bold font-mono text-ink tracking-tight">
-              <Monto
-                centavos={kpis.ingresosProyectadosCentavos}
-                disposicion="apilado"
-                classNameBs="text-[0.76em]"
+      <div className="space-y-6">
+        {/* Indicadores: cifra actual y su serie diaria, ambas calculadas con datos cargados */}
+        <div data-entrada className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+          {error ? (
+            <ErrorState className="col-span-full" error={error} onReintentar={reintentar} />
+          ) : (
+            <>
+              <TarjetaKpi
+                etiqueta="En alquiler"
+                valor={kpis.activosEnAlquiler}
+                detalle={`${formatearNumero(kpis.activosOperativos)} disponibles en patio`}
+                color="verde"
+                serie={series.activosConReserva}
+                etiquetaSerie={`Activos con reserva por día, últimos ${DIAS_SERIE} días`}
+                to="/inventario"
+                cargando={cargando}
               />
-            </div>
-          </div>
-          <p className="text-[11px] text-ink-2 truncate">
-            Proyección de contratos del mes civil
-          </p>
+              <TarjetaKpi
+                etiqueta="Facturación del mes"
+                valor={
+                  <Monto centavos={kpis.ingresosProyectadosCentavos} entero disposicion="apilado" classNameBs="text-xs font-normal" />
+                }
+                detalle="Proyección del mes civil"
+                color="azul"
+                serie={series.montoPorInicioUsd}
+                etiquetaSerie={`Monto por día de inicio, últimos ${DIAS_SERIE} días`}
+                formatoSerie={(usd) => formatearMonto(usd * 100, { entero: true })}
+                cargando={cargando}
+              />
+              <TarjetaKpi
+                etiqueta="Servicios vencidos"
+                valor={kpis.mantenimientosVencidos}
+                detalle={`${formatearNumero(kpis.mantenimientosPorVencer)} por vencer`}
+                color="violeta"
+                serie={series.ordenesEnTaller}
+                etiquetaSerie={`Órdenes en taller por día, últimos ${DIAS_SERIE} días`}
+                to="/mantenimiento"
+                cargando={cargando}
+              />
+              <TarjetaKpi
+                etiqueta="Conflictos abiertos"
+                valor={kpis.conflictosAbiertosCount}
+                detalle="Solapes o activos no operativos"
+                color="naranja"
+                serie={series.conflictosPorInicio}
+                etiquetaSerie={`Por día de inicio de la reserva, próximos ${DIAS_SERIE} días`}
+                indiceHoy={0}
+                to="/planificador"
+                cargando={cargando}
+              />
+            </>
+          )}
         </div>
-      </div>
 
-      {/* Gráficos de Flota y Ocupación */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Distribución de estados */}
-        <div className="bg-panel border border-line rounded-xl shadow-panel p-4 flex flex-col">
-          <div className="flex items-center justify-between border-b border-line pb-3 mb-2">
-            <div>
-              <h2 className="text-sm font-semibold text-ink">Estado de la Flota</h2>
-              <p className="text-xs text-ink-3">Distribución operativa en tiempo real</p>
-            </div>
-            <Link
-              to="/inventario"
-              className="text-xs text-accent-fg hover:underline font-medium"
-            >
-              Inventario →
-            </Link>
-          </div>
-          <div className="flex-1 min-h-64">
+        {/* Analítica: tres proporciones de la flota y el monto mensual por estado */}
+        <div data-entrada>
+          <Tarjeta
+            titulo="Analítica de la flota"
+            descripcion="Proporciones actuales de la flota y monto estimado por mes de inicio de la reserva (USD)"
+            estado={estado}
+            esqueleto={
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-center">
+                <div className="grid grid-cols-3 justify-items-center gap-3">
+                  {[0, 1, 2].map((i) => (
+                    <Skeleton key={i} className="size-20 rounded-full sm:size-24 xl:size-28" />
+                  ))}
+                </div>
+                <Skeleton className="h-64 w-full" />
+              </div>
+            }
+          >
+            {kpis.totalActivos === 0 ? (
+              <EmptyState
+                icono={TruckIcon}
+                titulo="Aún no hay activos"
+                descripcion="Registra activos en el inventario para ver la analítica de la flota."
+                className="py-8"
+              />
+            ) : (
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-center">
+                <AnillosFlota anillos={anillos} />
+                <GraficoTendenciaIngresos datos={ingresosMensuales} />
+              </div>
+            )}
+          </Tarjeta>
+        </div>
+
+        {/* Reportes: cifra y barras */}
+        <div data-entrada className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <Tarjeta
+            titulo="Estado de la flota"
+            descripcion="Activos por estado en este momento"
+            accion={
+              <Link to="/inventario" className="text-[13px] font-medium text-accent-fg hover:underline">
+                Ver inventario
+              </Link>
+            }
+            estado={estado}
+            esqueleto={esqueletoReporte}
+          >
             <GraficoDistribucionFlota datos={distribucionEstados} />
-          </div>
+          </Tarjeta>
+
+          <Tarjeta
+            titulo="Ocupación por categoría"
+            descripcion="Horas reservadas sobre horas disponibles, últimos 30 días"
+            estado={estado}
+            esqueleto={esqueletoReporte}
+          >
+            <GraficoUtilizacionCategorias datos={utilizacionPorCategoria} media={kpis.tasaUtilizacionGlobal} />
+          </Tarjeta>
         </div>
 
-        {/* Utilización por categoría */}
-        <div className="bg-panel border border-line rounded-xl shadow-panel p-4 flex flex-col lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-line pb-3 mb-2">
-            <div>
-              <h2 className="text-sm font-semibold text-ink">Ocupación por Categoría</h2>
-              <p className="text-xs text-ink-3">Porcentaje de horas reservadas vs capacidad (30 días)</p>
-            </div>
-            <span className="text-xs font-mono px-2 py-0.5 rounded bg-panel-2 border border-line text-ink-2">
-              Media: {kpis.tasaUtilizacionGlobal} %
-            </span>
-          </div>
-          <div className="flex-1 min-h-64">
-            <GraficoUtilizacionCategorias datos={utilizacionPorCategoria} />
-          </div>
+        {/* Alertas accionables y operaciones de hoy */}
+        <div data-entrada className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <PanelAlertasAccionables alertas={alertasAccionables} estado={estado} />
+          <TablaOperacionesHoy operaciones={operacionesHoy} estado={estado} />
         </div>
-      </div>
-
-      {/* Tendencia de Ingresos */}
-      <div className="bg-panel border border-line rounded-xl shadow-panel p-4">
-        <div className="flex items-center justify-between border-b border-line pb-3 mb-2">
-          <div>
-            <h2 className="text-sm font-semibold text-ink">Tendencia de Ingresos Estimados</h2>
-            <p className="text-xs text-ink-3">Evolución de contratos por período mensual (USD)</p>
-          </div>
-          <span className="text-xs text-ink-3 font-mono">
-            Ventana global de demostración
-          </span>
-        </div>
-        <GraficoTendenciaIngresos datos={ingresosMensuales} />
-      </div>
-
-      {/* Alertas Accionables y Operaciones de Hoy */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PanelAlertasAccionables alertas={alertasAccionables} />
-        <TablaOperacionesHoy operaciones={operacionesHoy} />
       </div>
     </div>
   );

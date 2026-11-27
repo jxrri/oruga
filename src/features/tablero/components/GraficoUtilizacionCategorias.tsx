@@ -1,80 +1,57 @@
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Cell,
-} from 'recharts';
+import { ChartBarHorizontalIcon } from '@phosphor-icons/react';
 import type { UtilizacionCategoria } from '../useMetricasTablero';
+import { FilaBarra } from './FilaBarra';
+import { formatearNumero, formatearPorcentaje } from '@/shared/lib/formato';
+import { EmptyState } from '@/shared/ui';
+
+/** Filas a la vista: las categorías más ocupadas. */
+const MAXIMO = 6;
 
 interface GraficoUtilizacionCategoriasProps {
+  /** Ordenadas de mayor a menor ocupación */
   datos: UtilizacionCategoria[];
+  /** Ocupación de toda la flota, en porcentaje */
+  media: number;
 }
 
-export function GraficoUtilizacionCategorias({ datos }: GraficoUtilizacionCategoriasProps) {
+/** Horas reservadas sobre horas disponibles por categoría en los últimos 30 días. */
+export function GraficoUtilizacionCategorias({ datos, media }: GraficoUtilizacionCategoriasProps) {
+  if (datos.length === 0) {
+    return (
+      <EmptyState
+        icono={ChartBarHorizontalIcon}
+        titulo="Sin categorías"
+        descripcion="La ocupación aparece cuando hay categorías con activos."
+        className="py-8"
+      />
+    );
+  }
+
   return (
-    <div className="h-64 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={datos}
-          layout="vertical"
-          margin={{ top: 8, right: 16, left: 16, bottom: 8 }}
-        >
-          <XAxis
-            type="number"
-            domain={[0, 100]}
-            unit="%"
-            stroke="var(--color-ink-3)"
-            fontSize={11}
-            tickLine={false}
+    <>
+      <p className="flex flex-wrap items-baseline gap-x-1.5">
+        <span className="tabular text-2xl font-semibold tracking-tight text-ink">{formatearPorcentaje(media / 100)}</span>
+        <span className="text-[13px] text-ink-3">de ocupación en toda la flota</span>
+      </p>
+      <ul className="mt-5 space-y-3">
+        {datos.slice(0, MAXIMO).map((d, i) => (
+          <FilaBarra
+            key={d.categoriaId}
+            etiqueta={d.nombre}
+            nota={`${formatearNumero(d.horasReservadas)} de ${formatearNumero(d.horasDisponibles)} h`}
+            valor={formatearPorcentaje(d.porcentaje / 100)}
+            fraccion={d.porcentaje / 100}
+            color="var(--serie-naranja)"
+            // La lista va de mayor a menor: la primera fila es la más ocupada y es la única en tono pleno
+            tenue={i > 0}
           />
-          <YAxis
-            type="category"
-            dataKey="nombre"
-            stroke="var(--color-ink-2)"
-            fontSize={11}
-            tickLine={false}
-            width={110}
-          />
-          <Tooltip
-            content={({ active, payload }) => {
-              if (!active || !payload || !payload.length) return null;
-              const item = payload[0];
-              if (!item) return null;
-              const d = item.payload as UtilizacionCategoria;
-              return (
-                <div className="bg-panel border border-line-strong rounded-lg p-2.5 shadow-panel text-xs space-y-1">
-                  <p className="font-semibold text-ink">{d.nombre}</p>
-                  <p className="text-ink-2">
-                    Tasa de ocupación: <span className="font-mono font-bold text-ink">{d.porcentaje} %</span>
-                  </p>
-                  <p className="text-ink-3 text-[11px]">
-                    {d.horasReservadas.toLocaleString('es-VE')} h reservadas / {d.horasDisponibles.toLocaleString('es-VE')} h disponibles
-                  </p>
-                </div>
-              );
-            }}
-          />
-          <Bar dataKey="porcentaje" radius={[0, 4, 4, 0]}>
-            {datos.map((entry) => (
-              <Cell
-                key={`bar-${entry.categoriaId}`}
-                fill={
-                  entry.porcentaje >= 75
-                    ? '#10b981'
-                    : entry.porcentaje >= 50
-                      ? '#3b82f6'
-                      : entry.porcentaje >= 25
-                        ? '#f59e0b'
-                        : '#64748b'
-                }
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+        ))}
+      </ul>
+      {datos.length > MAXIMO && (
+        <p className="mt-4 text-xs text-ink-3">
+          Se muestran las {MAXIMO} categorías más ocupadas de {datos.length}.
+        </p>
+      )}
+    </>
   );
 }
